@@ -1,1 +1,1 @@
-# Meldep-v1.4-MCPServer
+# meldep-mcp
