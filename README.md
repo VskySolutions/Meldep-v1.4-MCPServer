@@ -1,10 +1,13 @@
 # meldep-mcp
 
-npm whoami
+- npm whoami
 > vsky-solutions
-npm version patch/major/minor
-npm config set //registry.npmjs.org/:_authToken <access token>
-npm publish --access public
+
+- npm version patch/major/minor
+
+- npm config set //registry.npmjs.org/:_authToken `<access token>`
+
+- npm publish --access public
 
 
 ### connect to claude desktop
