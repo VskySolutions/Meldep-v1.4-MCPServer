@@ -6,10 +6,8 @@ import { getMonthlyPlanTool, executeGetMonthlyPlanToolHandler, } from './tools/m
 import { getWeeklyPlanTool, executeGetWeeklyPlanToolHandler, } from './tools/weekly-plan/get-weekly-plans.tool.js';
 import { getAllRequirementsByProjectTool, executeGetAllRequirementsByProjectToolHandler, } from './tools/requirement/get-all-requirements-by-project.tool.js';
 import { executeGetTaskByTaskNumberToolHandler, getTaskByTaskNumberTool } from './tools/task/get-task-by-task-number.tool.js';
-import { getRequirementByIdTool, executeGetRequirementByIdToolHandler } from './tools/requirement-by-id/get-requirement-by-id.js';
-import { getRequirementsByStatusTool, executeGetRequirementsByStatusToolHandler, } from './tools/requirement-by-status/get-requirements-by-status.js';
-import { getRequirementsByModuleTool, executeGetRequirementsByModuleToolHandler, } from './tools/requirement-by-module/get-requirements-by-module.tools.js';
-
+import { getRequirementByIdTool, executeGetRequirementByIdToolHandler, } from './tools/requirement/get-requirement-by-id.js';
+import { getRequirementsByStatusTool, executeGetRequirementsByStatusToolHandler, } from './tools/requirement/get-requirements-by-status.js';
 import { login } from './auth/login.js';
 import {
     getTimesheetDataByDateRangeTool,
@@ -36,7 +34,7 @@ const logger = {
     error: (...args: any[]) => console.error(...args),
 };
 
-const tools = [getMonthlyPlanTool, getWeeklyPlanTool, getAllRequirementsByProjectTool, getTaskByTaskNumberTool, getTimesheetDataByDateRangeTool, getRequirementByIdTool, getRequirementsByStatusTool, getRequirementsByModuleTool];
+const tools = [getMonthlyPlanTool, getWeeklyPlanTool, getAllRequirementsByProjectTool, getTaskByTaskNumberTool, getTimesheetDataByDateRangeTool, getRequirementByIdTool, getRequirementsByStatusTool];
 const toolHandlers: ToolHandlers = {
     get_monthly_plan: executeGetMonthlyPlanToolHandler,
     get_weekly_plan: executeGetWeeklyPlanToolHandler,
@@ -45,7 +43,6 @@ const toolHandlers: ToolHandlers = {
     [getRequirementByIdTool.name]: executeGetRequirementByIdToolHandler,
     [getTimesheetDataByDateRangeTool.name]: executeGetTimesheetDataByDateRangeToolHandler,
     [getRequirementsByStatusTool.name]: executeGetRequirementsByStatusToolHandler,
-    [getRequirementsByModuleTool.name]: executeGetRequirementsByModuleToolHandler,
 };
 const parseCommandLineArgs = () => {
     const args = process.argv.slice(2);

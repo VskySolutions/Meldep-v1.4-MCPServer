@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { meldepClient } from '../../client/meldep-client.js'; // Use .js for runtime import
 import { sessionStore } from '../../auth/session-store.js';
 import { mapRequirementResponse } from './mappers/requirement.mapper.js'; // Use .js for runtime import
-import { getRequirementByIdTool, executeGetRequirementByIdToolHandler,} from './requirements/get-requirement-by-id.js';
 
 const logger = {
     info: (...args) => console.error(...args),

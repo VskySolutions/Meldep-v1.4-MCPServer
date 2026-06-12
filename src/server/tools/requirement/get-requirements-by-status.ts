@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { meldepClient } from '../../client/meldep-client.js';
 import { sessionStore } from '../../auth/session-store.js';
 import { mapRequirementsByStatusResponse } from './mappers/requirement-by-status.mapper.js';
-import { mapRequirementsByStatusResponse } from './mappers/requirement-by-status.mapper.js';
 
 const logger = {
     info: (...args) => console.error(...args),
