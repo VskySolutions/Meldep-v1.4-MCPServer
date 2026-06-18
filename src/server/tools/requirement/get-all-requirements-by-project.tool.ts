@@ -111,7 +111,43 @@ async function executeGetAllRequirementsByProjectTool(input) {
 }
 export const getAllRequirementsByProjectTool = {
     name: 'get_all_requirements_by_project',
-    description: 'Retrieves and processes requirement data for a given project from Meldep ERP, providing an AI-friendly, structured overview with strict pagination and payload optimization. Supports filtering by project ID, page, pageSize, sortBy, descending, searchText, and requirementNumber.',
+
+    description: `Retrieves requirement details for the current project, including requirement information, status, priority, ownership, and associated tasks.
+
+Use when you need to review project requirements, track requirement status, or view tasks linked to a requirement.
+
+Args:
+    page (int): Page number for pagination (e.g., 1).
+    pageSize (int): Number of records to retrieve per page (e.g., 10).
+    sortBy (str, optional): Field used for sorting requirements.
+    descending (bool, optional): Whether to sort results in descending order.
+    searchText (str, optional): Text used to search within requirements.
+    requirementNumber (str, optional): Specific requirement number to search for.
+
+Response:
+{
+    "isError": false,
+    "message": "Requirement details retrieved and mapped successfully.",
+    "data": [
+        {
+            "requirementId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+            "requirementNo": 1182,
+            "requirementTitle": "Project Requirement Generation Using Historical Performance Data & Existing Documents",
+            "requirementModule": "AI Testing Assistant",
+            "requirementEnteredBy": "John Doe",
+            "requirementIdentifiedBy": "Jane Doe",
+            "requirementStatus": "Close",
+            "requirementPriority": "N/A",
+            "tasks": [
+                {
+                    "taskId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                    "taskNumber": 14100,
+                    "taskStatus": "Close"
+                }
+            ]
+        }
+    ]
+}`,
     inputSchema: {
         type: 'object',
         properties: {

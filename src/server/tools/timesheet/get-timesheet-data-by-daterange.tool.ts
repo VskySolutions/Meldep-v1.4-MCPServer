@@ -72,10 +72,41 @@ async function executeGetTimesheetDataByDateRangeTool(input) {
 
 export const getTimesheetDataByDateRangeTool = {
     name: 'get_timesheet_data_by_daterange',
-    description:
-        'Retrieves timesheet entries from Meldep ERP for a given date range. ' +
-        'Returns employee name, project, module, task, activity, hours logged, and work description. ' +
-        'Project ID is read from session. Use searchForLoggedInUserTimesheets to filter by the logged-in employee.',
+
+    description: `Retrieves timesheet entries for a specified date range, including employee details, project information, tasks, activities, hours logged, billable hours, and work descriptions.
+
+Use when you need to review employee timesheets, track work completed, analyze effort spent on tasks, or generate timesheet reports.
+
+Args:
+    fromDate (str): Start date in MM/DD/YYYY format (e.g., 06/01/2026).
+    toDate (str): End date in MM/DD/YYYY format (e.g., 06/30/2026).
+    searchForLoggedInUserTimesheets (bool, optional): Whether to return timesheet entries only for the logged-in employee.
+
+Response:
+{
+    "isError": false,
+    "message": "Successfully retrieved timesheet data.",
+    "data": {
+        "total": 43,
+        "timesheets": [
+            {
+                "timesheetDate": "06/17/2026",
+                "employeeName": "John Doe",
+                "lines": [
+                    {
+                        "projectName": "Project Name",
+                        "moduleName": "Module Name",
+                        "taskName": "Task Name",
+                        "activityName": "Engineering",
+                        "hours": 8,
+                        "billableHours": 0,
+                        "description": "Work completed during the timesheet period."
+                    }
+                ]
+            }
+        ]
+    }
+}`,
     inputSchema: {
         type: 'object',
         properties: {

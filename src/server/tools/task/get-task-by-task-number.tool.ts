@@ -120,7 +120,49 @@ async function executeGetTaskByTaskNumberTool(input) {
 }
 export const getTaskByTaskNumberTool = {
     name: 'get_task_by_task_number',
-    description: 'Retrieves task details from Meldep ERP using task number and returns AI-friendly task data.',
+
+    description: `Retrieves task details from Meldep ERP using a task number, including task information, assignment details, module information, status, priority, and associated activities.
+
+Use when you need to review task details, track task progress, view assigned resources, or inspect activities linked to a task.
+
+Args:
+    taskNumber (int): Task number to search for (e.g., 14100).
+    page (int, optional): Page number for pagination (e.g., 1).
+    pageSize (int, optional): Number of records to retrieve per page (e.g., 10).
+    searchForLoggedInUserTasks (bool, optional): Whether to return only tasks assigned to the logged-in user.
+    searchText (str, optional): Search keyword used to filter tasks by activity name or description.
+
+Response:
+{
+    "isError": false,
+    "message": "Successfully retrieved task details.",
+    "data": [
+        {
+            "taskId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+            "taskNumber": 14100,
+            "taskName": "Project Requirement Generation Using Historical Performance Data & Existing Documents",
+            "taskDescription": "Implement an AI-based solution to generate project requirements...",
+            "taskEstimateTime": 16,
+            "taskStartDate": "06/02/2026",
+            "taskEndDate": "06/30/2026",
+            "taskAssignedTo": "",
+            "taskPriority": "Medium",
+            "taskStatus": "Close",
+            "taskModule": {
+                "moduleId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                "moduleName": "AI Testing Assistant"
+            },
+            "taskCreatedBy": "John Doe",
+            "activities": [
+                {
+                    "activityId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                    "activityName": "Engineering",
+                    "activityAssignedTo": "Jane Doe"
+                }
+            ]
+        }
+    ]
+}`,
     inputSchema: {
         type: 'object',
         properties: {

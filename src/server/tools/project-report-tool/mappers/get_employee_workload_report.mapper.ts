@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-export function mapEmployeeReport(
+export function mapEmployeeWorkloadReport(
     employeeId,
     activitiesResponse
 ) {
@@ -15,7 +15,7 @@ export function mapEmployeeReport(
 
         AssignedHrs: {},
 
-        TotalActualHrs: 0,
+        TotalActualHrsCompleted: 0,
     };
 
     const taskCount = {
@@ -127,7 +127,7 @@ export function mapEmployeeReport(
             assignedHrs.Open;
     }
 
-    employeeReport.TotalActualHrs =
+    employeeReport.TotalActualHrsCompleted =
         Object.values(
             employeeReport.AssignedHrs
         ).reduce(

@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { meldepClient } from '../../client/meldep-client.js';
-import { mapEmployeeReport } from './mappers/get_employee_workload_report.mapper.js';
+import { mapEmployeeWorkloadReport } from './mappers/get_employee_workload_report.mapper.js';
 
 const logger = {
     info: (...args) => console.error(...args),
@@ -64,7 +64,7 @@ async function executeGetEmployeeWorkloadReportTool(input) {
         }
 
         const mappedResponse =
-            mapEmployeeReport(
+            mapEmployeeWorkloadReport(
                 employeeId,
                 response.activities,
                 response.projects
@@ -116,7 +116,7 @@ Response:
                 "InProgress": 40,
                 "Open": 24
             },
-            "TotalActualHrs": 64
+            "TotalActualHrsCompleted": 64
         }
     ]
 }`,
@@ -143,4 +143,3 @@ export async function executeGetEmployeeWorkloadReportToolHandler(
         input
     );
 }
-  

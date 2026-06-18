@@ -67,7 +67,7 @@ async function executeGetTeamMembersByProjectIdTool(input) {
 export const getTeamMembersByProjectIdTool = {
     name: 'get_team_member_by_project_id',
 
-    description: `Retrieves all team members assigned under a specific project.
+    description: `Retrieves all team members assigned to a specific project, including employee details and project roles.
 
 Use to retrieve team members assigned to a project.
 
@@ -81,7 +81,7 @@ Response:
     "data": [
         {
             "employeeId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-            "employeeName": "Aditya Gurav",
+            "employeeName": "John Doe",
             "role": "Intern"
         }
     ]
