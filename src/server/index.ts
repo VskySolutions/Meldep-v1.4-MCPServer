@@ -8,7 +8,7 @@ import { getAllRequirementsByProjectTool, executeGetAllRequirementsByProjectTool
 import { executeGetTaskByTaskNumberToolHandler, getTaskByTaskNumberTool } from './tools/task/get-task-by-task-number.tool.js';
 import { getRequirementByIdTool, executeGetRequirementByIdToolHandler } from './tools/requirement-by-id/get-requirement-by-id.js';
 import { getRequirementsByStatusTool, executeGetRequirementsByStatusToolHandler, } from './tools/requirement-by-status/get-requirements-by-status.js';
-import { getRequirementsByModuleTool, executeGetRequirementsByModuleToolHandler, } from './tools/requirement-by-module/get-requirements-by-module.tools.js';
+import { getModuleByProjectIdTool, executeGetModuleByProjectIdToolHandler } from './tools/module-by-project-id/get-module-by-project-id.js';
 
 import { login } from './auth/login.js';
 import {
@@ -36,7 +36,7 @@ const logger = {
     error: (...args: any[]) => console.error(...args),
 };
 
-const tools = [getMonthlyPlanTool, getWeeklyPlanTool, getAllRequirementsByProjectTool, getTaskByTaskNumberTool, getTimesheetDataByDateRangeTool, getRequirementByIdTool, getRequirementsByStatusTool, getRequirementsByModuleTool];
+const tools = [getMonthlyPlanTool, getWeeklyPlanTool, getAllRequirementsByProjectTool, getTaskByTaskNumberTool, getTimesheetDataByDateRangeTool, getRequirementByIdTool, getRequirementsByStatusTool, getModuleByProjectIdTool];
 const toolHandlers: ToolHandlers = {
     get_monthly_plan: executeGetMonthlyPlanToolHandler,
     get_weekly_plan: executeGetWeeklyPlanToolHandler,
@@ -45,7 +45,7 @@ const toolHandlers: ToolHandlers = {
     [getRequirementByIdTool.name]: executeGetRequirementByIdToolHandler,
     [getTimesheetDataByDateRangeTool.name]: executeGetTimesheetDataByDateRangeToolHandler,
     [getRequirementsByStatusTool.name]: executeGetRequirementsByStatusToolHandler,
-    [getRequirementsByModuleTool.name]: executeGetRequirementsByModuleToolHandler,
+    [getModuleByProjectIdTool.name]: executeGetModuleByProjectIdToolHandler,
 };
 const parseCommandLineArgs = () => {
     const args = process.argv.slice(2);

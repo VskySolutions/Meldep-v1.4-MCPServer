@@ -18,5 +18,8 @@ export const ERP_ENDPOINTS = {
     TIMESHEET: {
         LIST: '/Timesheet/list',
     },
+    PROJECT_MODULES: {
+        DROPDOWN_LIST: '/project-modules/dropdown/list',
+    },
     // Add other ERP endpoints as needed
 };

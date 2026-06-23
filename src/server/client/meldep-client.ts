@@ -185,6 +185,29 @@ export class MeldepClient {
             throw error;
         }
     }
+
+    async getModulesByProjectId(projectId) {
+        await this.ensureAuthenticated();
+        try {
+            console.error(`DEBUG: Calling GET ${ERP_ENDPOINTS.PROJECT_MODULES.DROPDOWN_LIST}?ProjectId=${projectId}`);
+            const response = await this.httpClient.get(
+                ERP_ENDPOINTS.PROJECT_MODULES.DROPDOWN_LIST,
+                {
+                    params: {
+                        isTemplate: false,
+                        ProjectId: projectId,
+                        showTaskCount: false,
+                    },
+                }
+            );
+            logger.info('Successfully fetched project modules dropdown list.');
+            return response.data;
+        } catch (error) {
+            console.error(`DEBUG: project-modules/dropdown/list FAILED:`, error?.response?.status, JSON.stringify(error?.response?.data));
+            logger.error({ error }, 'Failed to fetch project modules dropdown list.');
+            throw error;
+        }
+    }
 }
 
 export const meldepClient = new MeldepClient();
