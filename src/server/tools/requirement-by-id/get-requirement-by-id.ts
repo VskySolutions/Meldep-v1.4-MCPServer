@@ -90,11 +90,43 @@ async function executeGetRequirementByIdTool(input) {
 
 export const getRequirementByIdTool = {
     name: 'get_requirement_by_id',
-    description: `Retrieves full details of a single requirement from Meldep ERP, including the complete description, status, module, and linked tasks.
-Accepts EITHER:
-- A requirement number (e.g. "1360") — will auto-resolve to UUID internally
-- A requirement UUID (e.g. "0b040b6f-d3da-42d9-b042-1cfc3f56a020") — used directly
-Always prefer calling this tool when the user asks about a specific requirement's details or description.`,
+
+    description: `Retrieves complete details of a specific requirement, including its description, status, approval information, project details, ownership, dates, and linked tasks.
+
+Use when you need to review a requirement's full details, understand its business context, track its status, or inspect associated tasks.
+
+Args:
+    requirementId (str): Requirement number (e.g., 1182) or requirement UUID (e.g., xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx).
+
+Response:
+{
+    "isError": false,
+    "message": "Requirement retrieved successfully.",
+    "data": {
+        "requirementId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        "requirementNo": 1182,
+        "requirementTitle": "Project Requirement Generation Using Historical Performance Data & Existing Documents",
+        "requirementDescription": "Implement an AI-based solution to generate project requirements...",
+        "requirementModule": "AI Testing Assistant",
+        "requirementProject": "Project Name",
+        "requirementEnteredBy": "John Doe",
+        "requirementIdentifiedBy": "Jane Doe",
+        "requirementStatus": "Close",
+        "approvalStatus": "Approved",
+        "requirementPriority": "N/A",
+        "identifiedDate": "05/06/2026",
+        "createdDate": "05/06/2026 06:19 PM",
+        "modifiedDate": "06/06/2026 11:44 AM",
+        "notes": "",
+        "tasks": [
+            {
+                "taskId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                "taskNumber": 14100,
+                "taskStatus": "Close"
+            }
+        ]
+    }
+}`,
     inputSchema: {
         type: 'object',
         properties: {

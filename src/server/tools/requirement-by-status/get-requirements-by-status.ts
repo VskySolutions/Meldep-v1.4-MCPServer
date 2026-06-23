@@ -120,17 +120,46 @@ async function executeGetRequirementsByStatusTool(input) {
 
 export const getRequirementsByStatusTool = {
     name: 'get_requirements_by_status',
-    description: `Retrieves requirements from Meldep ERP filtered by one or more statuses.
-Use this when a PM asks things like:
-- "Show me all open requirements"
-- "List requirements in progress"
-- "What requirements are ready for prod?"
-- "Show cancelled and on hold requirements"
 
-Available statuses: New, Open, In Progress, On Hold by Client, Dev Deployed, Supp Deployed, Test Deployed, In Testing, Waiting for someone, Paused by Dev team, Ready for Prod, Prod Deployed, Cancelled, Close.
-Common aliases also accepted: "closed" = Close, "on hold" = On Hold by Client, "paused" = Paused by Dev team, "waiting" = Waiting for someone.
+    description: `Retrieves requirements filtered by one or more statuses, including requirement details, ownership information, approval status, priority, and linked tasks.
 
-Returns requirement ID, number, title, module, status, priority, entered by, identified by, and linked task summary.`,
+Use when you need to review requirements by status, track requirement progress, identify pending work, or analyze requirements in a specific workflow stage.
+
+Args:
+    statuses (list[str]): One or more requirement statuses to filter by (e.g., ["Open"], ["In Progress"], ["Close"]).
+    page (int, optional): Page number for pagination (e.g., 1).
+    pageSize (int, optional): Number of records to retrieve per page (e.g., 10).
+
+Response:
+{
+    "isError": false,
+    "message": "Requirements retrieved successfully.",
+    "totalCount": 4,
+    "page": 1,
+    "pageSize": 10,
+    "data": [
+        {
+            "requirementId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+            "requirementNo": 1034,
+            "requirementTitle": "Implementation of AI And Different AI Tool for Business Process",
+            "requirementModule": "Implementation of AI and Modern Automation Tools",
+            "requirementEnteredBy": "John Doe",
+            "requirementIdentifiedBy": "Jane Doe",
+            "requirementStatus": "In Progress",
+            "approvalStatus": "Approved",
+            "requirementPriority": "2nd",
+            "createdDate": "04/27/2026 02:32 PM",
+            "modifiedDate": "06/05/2026 06:58 PM",
+            "tasks": [
+                {
+                    "taskId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                    "taskNumber": 13675,
+                    "taskStatus": "Open"
+                }
+            ]
+        }
+    ]
+}`,
     inputSchema: {
         type: 'object',
         properties: {
