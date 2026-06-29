@@ -65,7 +65,33 @@ async function executeGetMonthlyPlanTool(input) {
 }
 export const getMonthlyPlanTool = {
     name: 'get_monthly_plan',
-    description: 'Retrieves and processes monthly plan data from Meldep ERP, providing an AI-friendly, structured overview with pagination support.',
+
+    description: `Retrieves monthly plan details from Meldep ERP, including planned targets, achieved targets, and plan ownership information.
+
+Use when you need to review monthly planning objectives, progress updates, and target details.
+
+Args:
+    skipIndex (int): Number of records to skip for pagination (e.g., 0).
+    takeCount (int): Number of records to retrieve per request (e.g., 4).
+
+Response:
+{
+    "isError": false,
+    "message": "Monthly plan details retrieved successfully.",
+    "data": [
+        {
+            "id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+            "monthDate": "06/01/2026",
+            "projectMonthlyPlanDatesLines": [
+                {
+                    "expectedTargetDescription": "MCP Integration for BO Explorer...",
+                    "actualAchievedTargetDescription": "Not Available",
+                    "expectedDescriptionCreatedBy": "John Doe"
+                }
+            ]
+        }
+    ]
+}`,
     inputSchema: {
         type: 'object',
         properties: {

@@ -81,7 +81,40 @@ async function executeGetWeeklyPlanTool(input) {
 }
 export const getWeeklyPlanTool = {
     name: 'get_weekly_plan',
-    description: 'Retrieves and processes weekly plan data from Meldep ERP, providing an AI-friendly, structured overview with pagination support.',
+    description: `Retrieves weekly plan details from Meldep ERP, including planned activities, actual progress, assigned team members, and estimated effort for a specific week or a range of weeks.
+
+Use when you need to review weekly objectives, assigned resources, planned work, and progress updates.
+
+Args:
+    skipIndex (int): Number of records to skip for pagination (e.g., 0).
+    takeCount (int): Number of records to retrieve per request (e.g., 4).
+    weekEndDate (str, optional): Week end date in MM/DD/YYYY HH:mm:ss format used to filter a specific week (e.g., 06/21/2026 00:00:00).
+
+Response:
+{
+    "isError": false,
+    "message": "Weekly plan details retrieved successfully.",
+    "data": [
+        {
+            "id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+            "weekDate": "06/21/2026",
+            "projectWeeklyPlanDatesLines": [
+                {
+                    "expectedDescription": "Planned activities and objectives for the week...",
+                    "actualDescription": "",
+                    "expectedDescriptionCreatedBy": "John Doe",
+                    "projectWeeklyPlanDatesLinesAssignedTo": [
+                        {
+                            "name": "Employee Name",
+                            "estimateHrs": 16
+                        }
+                    ],
+                    "employeeEstimateHoursForWeekSummaryList": []
+                }
+            ]
+        }
+    ]
+}`,
     inputSchema: {
         type: 'object',
         properties: {

@@ -53,3 +53,6 @@ pids/
 
 # MCP local config (if used)
 .mcp/
+
+# sclc Process folder
+sdlc-processes

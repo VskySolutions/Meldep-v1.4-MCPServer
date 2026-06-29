@@ -5,6 +5,7 @@ export const ERP_ENDPOINTS = {
     },
     PROJECTS: {
         GET_PROJECT_WEEKLY_PLAN_DETAILS: '/projects/get-project-weekly-plan-details',
+        GET_PROJECT_BY_ID: '/projects',
     },
     REQUIREMENT: {
         LIST: '/requirement/list',
@@ -18,5 +19,11 @@ export const ERP_ENDPOINTS = {
     TIMESHEET: {
         LIST: '/Timesheet/list',
     },
+    PROJECT_MODULES: {
+        DROPDOWN_LIST: '/project-modules/dropdown/list',
+    },
     // Add other ERP endpoints as needed
+    PROJECT_ACTIVITIES: {
+    LIST_EXPAND_COLLAPSE: '/project-activities/list-expand-collapse',
+    },
 };
