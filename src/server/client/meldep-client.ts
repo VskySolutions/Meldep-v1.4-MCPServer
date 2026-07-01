@@ -211,82 +211,109 @@ export class MeldepClient {
         }
     }
      //get_employee_report
-async getEmployeeWorkloadReport(employeeId) {
-    await this.ensureAuthenticated();
+    async getEmployeeWorkloadReport(employeeId) {
+        await this.ensureAuthenticated();
 
-    try {
-        if (!employeeId || typeof employeeId !== 'string') {
-            throw new Error('Employee ID is required and must be a string');
-        }
-
-        const isInvalidFormat =
-            employeeId.length < 10 || !employeeId.includes('-');
-
-        if (isInvalidFormat) {
-            throw new Error('Invalid employee ID format');
-        }
-
-        const activitiesResponse = await this.httpClient.post(
-            ERP_ENDPOINTS.PROJECT_ACTIVITIES.LIST_EXPAND_COLLAPSE,
-            {
-                page: 1,
-                pageSize: 100,
-                sortBy: 'project.name',
-                sorts: {},
-                descending: false,
-                searchText: '',
-
-                assignedToIds: [employeeId],
-
-                projectIds: [],
-                projectModuleIds: [],
-                activityNameIds: [],
-                statusIds: [],
-                activeStatus: null,
-                sprintWeekEndDate: null,
-
-                activityStatusIds: [
-                    '6FD63531-D5EB-45D8-9491-6E7B98BB2194',
-                    '148AFC4C-E5E0-490D-9268-680587BF5183',
-                    '853B698D-2E6B-4751-B907-C65E4522D42C'
-                ]
+        try {
+            if (!employeeId || typeof employeeId !== 'string') {
+                throw new Error('Employee ID is required and must be a string');
             }
-        );
 
-        logger.info(
-            `Successfully fetched employee activities for employeeId: ${employeeId}`
-        );
+            const isInvalidFormat =
+                employeeId.length < 10 || !employeeId.includes('-');
 
-        const activities = activitiesResponse?.data || [];
+            if (isInvalidFormat) {
+                throw new Error('Invalid employee ID format');
+            }
 
-        if (!activities || activities.length === 0) {
-            logger.warn(
-                `No activities found for employeeId: ${employeeId}`
+            const activitiesResponse = await this.httpClient.post(
+                ERP_ENDPOINTS.PROJECT_ACTIVITIES.LIST_EXPAND_COLLAPSE,
+                {
+                    page: 1,
+                    pageSize: 100,
+                    sortBy: 'project.name',
+                    sorts: {},
+                    descending: false,
+                    searchText: '',
+
+                    assignedToIds: [employeeId],
+
+                    projectIds: [],
+                    projectModuleIds: [],
+                    activityNameIds: [],
+                    statusIds: [],
+                    activeStatus: null,
+                    sprintWeekEndDate: null,
+
+                    activityStatusIds: [
+                        '6FD63531-D5EB-45D8-9491-6E7B98BB2194',
+                        '148AFC4C-E5E0-490D-9268-680587BF5183',
+                        '853B698D-2E6B-4751-B907-C65E4522D42C'
+                    ]
+                }
             );
 
+            logger.info(
+                `Successfully fetched employee activities for employeeId: ${employeeId}`
+            );
+
+            const activities = activitiesResponse?.data || [];
+
+            if (!activities || activities.length === 0) {
+                logger.warn(
+                    `No activities found for employeeId: ${employeeId}`
+                );
+
+                return {
+                    activities: [],
+                    projects: [],
+                    isEmpty: true
+                };
+            }
+
             return {
-                activities: [],
+                activities,
                 projects: [],
-                isEmpty: true
+                isEmpty: false
             };
+
+        } catch (error) {
+            logger.error(
+                { error },
+                `Failed to fetch employee report for employeeId: ${employeeId}`
+            );
+
+            throw new Error(
+                error?.message || 'Failed to fetch employee workload report'
+            );
         }
-
-        return {
-            activities,
-            projects: [],
-            isEmpty: false
-        };
-
-    } catch (error) {
-        logger.error(
-            { error },
-            `Failed to fetch employee report for employeeId: ${employeeId}`
-        );
-
-        throw new Error(
-            error?.message || 'Failed to fetch employee workload report'
-        );
     }
-}
+    //get_module_by_id
+    async getModuleById(moduleId) {
+        await this.ensureAuthenticated();
+
+        try {
+            const response =
+                await this.httpClient.post(
+                    ERP_ENDPOINTS.REQUIREMENT.LIST,
+                    {}
+                );
+
+            logger.info(
+                'Successfully fetched requirements for module.'
+            );
+
+            return response.data;
+
+        } catch (error) {
+
+            logger.error(
+                { error },
+                'Failed to fetch module requirements.'
+            );
+
+            throw error;
+        }
+    }
 }
 export const meldepClient = new MeldepClient();

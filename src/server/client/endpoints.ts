@@ -7,11 +7,8 @@ export const ERP_ENDPOINTS = {
         GET_PROJECT_WEEKLY_PLAN_DETAILS: '/projects/get-project-weekly-plan-details',
         GET_PROJECT_BY_ID: '/projects',
     },
-    REQUIREMENT: {
+    REQUIREMENT: {  
         LIST: '/requirement/list',
-    },
-    TASK: {
-        GET_BY_TASK_NUMBER: '/project-tasks/list',
     },
     TASK: {
         GET_BY_TASK_NUMBER: '/project-tasks/list',
