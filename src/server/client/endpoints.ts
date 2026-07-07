@@ -8,11 +8,8 @@ export const ERP_ENDPOINTS = {
         GET_PROJECT_BY_ID: '/projects',
         LIST: '/projects/list',
     },
-    REQUIREMENT: {
+    REQUIREMENT: {  
         LIST: '/requirement/list',
-    },
-    TASK: {
-        GET_BY_TASK_NUMBER: '/project-tasks/list',
     },
     TASK: {
         GET_BY_TASK_NUMBER: '/project-tasks/list',

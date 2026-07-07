@@ -38,7 +38,7 @@ const logger = {
     error: (...args: any[]) => console.error(...args),
 };
 
-const tools = [getMonthlyPlanTool, getWeeklyPlanTool, getRequirementsTool, getTaskByTaskNumberTool, getTimesheetDataByDateRangeTool, getTeamMembersByProjectIdTool, getEmployeeWorkloadReportTool, getModuleByProjectIdTool, getProjectIdTool];
+const tools = [getMonthlyPlanTool, getWeeklyPlanTool, getRequirementsTool, getTaskByTaskNumberTool, getModuleByProjectIdTool, getTimesheetDataByDateRangeTool, getTeamMembersByProjectIdTool, getEmployeeWorkloadReportTool, getProjectIdTool];
 const toolHandlers: ToolHandlers = {
     get_monthly_plan: executeGetMonthlyPlanToolHandler,
     get_weekly_plan: executeGetWeeklyPlanToolHandler,
