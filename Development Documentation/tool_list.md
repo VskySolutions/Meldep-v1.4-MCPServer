@@ -21,6 +21,14 @@
 
 ## New Tools to Add
 
+### Projects
+
+| # | Tool Name | Handler Function | Type | Status | Description | Inputs | Dependencies |
+|---|---|---|---|---|---|---|---|
+| 28 | `get_project_id` | `executeGetProjectIdToolHandler` | Data Fetch | ✅ Done | Resolves a project ID via keyword-based search on the project name; returns all matching projects (id, name, customer) so the correct one can be selected | `searchText` (string, required), `page?` (number, default 1), `pageSize?` (number, default 20) | `meldepClient`, `get-project-id.mapper` |
+
+---
+
 ### Requirements
 
 | # | Tool Name | Handler Function | Type | Status | Description | Inputs | Dependencies |
