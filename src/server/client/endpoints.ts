@@ -6,6 +6,7 @@ export const ERP_ENDPOINTS = {
     PROJECTS: {
         GET_PROJECT_WEEKLY_PLAN_DETAILS: '/projects/get-project-weekly-plan-details',
         GET_PROJECT_BY_ID: '/projects',
+        LIST: '/projects/list',
     },
     REQUIREMENT: {  
         LIST: '/requirement/list',

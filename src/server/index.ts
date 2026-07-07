@@ -12,6 +12,7 @@ import {getTeamMembersByProjectIdTool, executeGetTeamMembersByProjectIdToolHandl
 import { login } from './auth/login.js';
 import {getTimesheetDataByDateRangeTool, executeGetTimesheetDataByDateRangeToolHandler, } from './tools/timesheet/get-timesheet-data-by-daterange.tool.js';
 import {getEmployeeWorkloadReportTool, executeGetEmployeeWorkloadReportToolHandler, } from './tools/project-report-tool/get_employee_workload_report.tool.js';
+import {getProjectListTool, executeGetProjectListToolHandler, } from './tools/project-list/get_project_list.tool.js';
 import {getModuleByIdTool, executeGetModuleByIdToolHandler, } from './tools/project-module/get_module_by_id.tool.js';
 import { sessionStore } from './auth/session-store.js';
 /**
@@ -34,7 +35,7 @@ const logger = {
     error: (...args: any[]) => console.error(...args),
 };
 
-const tools = [getMonthlyPlanTool, getWeeklyPlanTool, getAllRequirementsByProjectTool, getTaskByTaskNumberTool, getTimesheetDataByDateRangeTool, getRequirementByIdTool, getRequirementsByStatusTool,getTeamMembersByProjectIdTool,getEmployeeWorkloadReportTool,getModuleByIdTool];
+const tools = [getMonthlyPlanTool, getWeeklyPlanTool, getAllRequirementsByProjectTool, getTaskByTaskNumberTool, getTimesheetDataByDateRangeTool, getRequirementByIdTool, getRequirementsByStatusTool,getTeamMembersByProjectIdTool,getEmployeeWorkloadReportTool,getModuleByIdTool,getProjectListTool];
 const toolHandlers: ToolHandlers = {
     get_monthly_plan: executeGetMonthlyPlanToolHandler,
     get_weekly_plan: executeGetWeeklyPlanToolHandler,
@@ -46,6 +47,7 @@ const toolHandlers: ToolHandlers = {
     [getTeamMembersByProjectIdTool.name]:executeGetTeamMembersByProjectIdToolHandler,
     [getEmployeeWorkloadReportTool.name]: executeGetEmployeeWorkloadReportToolHandler,
     [getModuleByIdTool.name]: executeGetModuleByIdToolHandler,
+    [getProjectListTool.name]: executeGetProjectListToolHandler,
 };
 const parseCommandLineArgs = () => {
     const args = process.argv.slice(2);

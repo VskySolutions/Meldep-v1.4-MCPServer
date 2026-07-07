@@ -315,5 +315,33 @@ export class MeldepClient {
             throw error;
         }
     }
+    // get_project_list
+    async getProjectList(payload) {
+        await this.ensureAuthenticated();
+
+        try {
+            const response = await this.httpClient.post(
+                ERP_ENDPOINTS.PROJECTS.LIST,
+                payload
+            );
+
+            logger.info(
+                'Successfully fetched project list.'
+            );
+
+            return response.data;
+
+        } catch (error) {
+
+            logger.error(
+                { error },
+                'Failed to fetch project list.'
+            );
+
+            throw new Error(
+                error?.message || 'Failed to fetch project list'
+            );
+        }
+    }
 }
 export const meldepClient = new MeldepClient();
