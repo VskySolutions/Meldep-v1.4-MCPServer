@@ -75,6 +75,18 @@ export class MeldepClient {
         }
     }
 
+    async getProjectList(payload) {
+        await this.ensureAuthenticated();
+        try {
+            const response = await this.httpClient.post(ERP_ENDPOINTS.PROJECTS.LIST, payload);
+            logger.info('Successfully fetched project list by keyword.');
+            return response.data;
+        } catch (error) {
+            logger.error({ error }, 'Failed to fetch project list by keyword.');
+            throw error;
+        }
+    }
+
     async getAllRequirementsByProject(payload) {
         await this.ensureAuthenticated();
         try {

@@ -11,13 +11,12 @@ import { getWeeklyPlanTool, executeGetWeeklyPlanToolHandler, } from './tools/wee
 import { getRequirementsTool, executeGetRequirementsToolHandler } from './tools/requirement/get-requirements.tool.js';
 import { executeGetTaskByTaskNumberToolHandler, getTaskByTaskNumberTool } from './tools/task/get-task-by-task-number.tool.js';
 import { getModuleByProjectIdTool, executeGetModuleByProjectIdToolHandler } from './tools/module-by-project-id/get-module-by-project-id.tool.js';
+import { getProjectIdTool, executeGetProjectIdToolHandler } from './tools/get-project-id/get-project-id.tool.js';
 
-import {getTeamMembersByProjectIdTool, executeGetTeamMembersByProjectIdToolHandler, } from './tools/project/get_team_member_by_project_id.tool.js';
+import {getTeamMembersByProjectIdTool, executeGetTeamMembersByProjectIdToolHandler, } from './tools/team-member-by-project-id/get_team_member_by_project_id.tool.js';
 import { login } from './auth/login.js';
 import {getTimesheetDataByDateRangeTool, executeGetTimesheetDataByDateRangeToolHandler, } from './tools/timesheet/get-timesheet-data-by-daterange.tool.js';
-import {getEmployeeWorkloadReportTool, executeGetEmployeeWorkloadReportToolHandler, } from './tools/project-report-tool/get_employee_workload_report.tool.js';
-import {getProjectListTool, executeGetProjectListToolHandler, } from './tools/project-list/get_project_list.tool.js';
-import {getModuleByIdTool, executeGetModuleByIdToolHandler, } from './tools/project-module/get_module_by_id.tool.js';
+import {getEmployeeWorkloadReportTool, executeGetEmployeeWorkloadReportToolHandler, } from './tools/employee-workload-report/get_employee_workload_report.tool.js';
 import { sessionStore } from './auth/session-store.js';
 /**
  * IMPORTANT:
@@ -39,18 +38,7 @@ const logger = {
     error: (...args: any[]) => console.error(...args),
 };
 
-const tools = [
-    getMonthlyPlanTool,
-    getWeeklyPlanTool,
-    getRequirementsTool,
-    getTaskByTaskNumberTool,
-    getModuleByProjectIdTool,
-    getTeamMembersByProjectIdTool,
-    getTimesheetDataByDateRangeTool,
-    getEmployeeWorkloadReportTool,
-    getProjectListTool,
-    getModuleByIdTool,
-];
+const tools = [getMonthlyPlanTool, getWeeklyPlanTool, getRequirementsTool, getTaskByTaskNumberTool, getModuleByProjectIdTool, getTimesheetDataByDateRangeTool, getTeamMembersByProjectIdTool, getEmployeeWorkloadReportTool, getProjectIdTool];
 const toolHandlers: ToolHandlers = {
     get_monthly_plan: executeGetMonthlyPlanToolHandler,
     get_weekly_plan: executeGetWeeklyPlanToolHandler,
@@ -62,10 +50,9 @@ const toolHandlers: ToolHandlers = {
     get_task_by_task_number: executeGetTaskByTaskNumberToolHandler,
     [getTimesheetDataByDateRangeTool.name]: executeGetTimesheetDataByDateRangeToolHandler,
     [getModuleByProjectIdTool.name]: executeGetModuleByProjectIdToolHandler,
+    [getProjectIdTool.name]: executeGetProjectIdToolHandler,
     [getTeamMembersByProjectIdTool.name]: executeGetTeamMembersByProjectIdToolHandler,
     [getEmployeeWorkloadReportTool.name]: executeGetEmployeeWorkloadReportToolHandler,
-    [getModuleByIdTool.name]: executeGetModuleByIdToolHandler,
-    [getProjectListTool.name]: executeGetProjectListToolHandler,
 };
 const parseCommandLineArgs = () => {
     const args = process.argv.slice(2);
