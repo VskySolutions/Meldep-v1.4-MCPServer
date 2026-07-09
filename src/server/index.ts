@@ -4,14 +4,13 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { ListToolsRequestSchema, CallToolRequestSchema, } from '@modelcontextprotocol/sdk/types.js';
 import { getMonthlyPlanTool, executeGetMonthlyPlanToolHandler, } from './tools/monthly-plan/get-monthly-plans.tool.js';
 import { getWeeklyPlanTool, executeGetWeeklyPlanToolHandler, } from './tools/weekly-plan/get-weekly-plans.tool.js';
-// [Req#4 - UnifiedRequirementTool] Replaced by get_requirements unified tool
-// import { getAllRequirementsByProjectTool, executeGetAllRequirementsByProjectToolHandler, } from './tools/requirement/get-all-requirements-by-project.tool.js';
-// import { getRequirementByIdTool, executeGetRequirementByIdToolHandler } from './tools/requirement-by-id/get-requirement-by-id.js';
-// import { getRequirementsByStatusTool, executeGetRequirementsByStatusToolHandler, } from './tools/requirement-by-status/get-requirements-by-status.js';
 import { getRequirementsTool, executeGetRequirementsToolHandler } from './tools/requirement/get-requirements.tool.js';
 import { executeGetTaskByTaskNumberToolHandler, getTaskByTaskNumberTool } from './tools/task/get-task-by-task-number.tool.js';
 import { getModuleByProjectIdTool, executeGetModuleByProjectIdToolHandler } from './tools/module-by-project-id/get-module-by-project-id.tool.js';
 import { getProjectIdTool, executeGetProjectIdToolHandler } from './tools/get-project-id/get-project-id.tool.js';
+import { getProjectListTool, executeGetProjectListToolHandler } from './tools/project-list/get_project_list.tool.js';
+import { getModuleByIdTool, executeGetModuleByIdToolHandler } from './tools/project-module/get_module_by_id.tool.js';
+// import { connectMeldepTool, executeConnectMeldepToolHandler } from './tools/auth/connect-meldep.tool.js';
 
 import {getTeamMembersByProjectIdTool, executeGetTeamMembersByProjectIdToolHandler, } from './tools/team-member-by-project-id/get_team_member_by_project_id.tool.js';
 import { login } from './auth/login.js';
@@ -38,14 +37,10 @@ const logger = {
     error: (...args: any[]) => console.error(...args),
 };
 
-const tools = [getMonthlyPlanTool, getWeeklyPlanTool, getRequirementsTool, getTaskByTaskNumberTool, getModuleByProjectIdTool, getTimesheetDataByDateRangeTool, getTeamMembersByProjectIdTool, getEmployeeWorkloadReportTool, getProjectIdTool];
+const tools = [getMonthlyPlanTool, getWeeklyPlanTool, getRequirementsTool, getTaskByTaskNumberTool, getModuleByProjectIdTool, getTimesheetDataByDateRangeTool, getTeamMembersByProjectIdTool, getEmployeeWorkloadReportTool, getProjectIdTool, getProjectListTool, getModuleByIdTool];
 const toolHandlers: ToolHandlers = {
     get_monthly_plan: executeGetMonthlyPlanToolHandler,
     get_weekly_plan: executeGetWeeklyPlanToolHandler,
-    // [Req#4 - UnifiedRequirementTool] Replaced by get_requirements unified tool
-    // get_all_requirements_by_project: executeGetAllRequirementsByProjectToolHandler,
-    // [getRequirementByIdTool.name]: executeGetRequirementByIdToolHandler,
-    // [getRequirementsByStatusTool.name]: executeGetRequirementsByStatusToolHandler,
     get_requirements: executeGetRequirementsToolHandler,
     get_task_by_task_number: executeGetTaskByTaskNumberToolHandler,
     [getTimesheetDataByDateRangeTool.name]: executeGetTimesheetDataByDateRangeToolHandler,
@@ -53,6 +48,9 @@ const toolHandlers: ToolHandlers = {
     [getProjectIdTool.name]: executeGetProjectIdToolHandler,
     [getTeamMembersByProjectIdTool.name]: executeGetTeamMembersByProjectIdToolHandler,
     [getEmployeeWorkloadReportTool.name]: executeGetEmployeeWorkloadReportToolHandler,
+    [getProjectListTool.name]: executeGetProjectListToolHandler,
+    [getModuleByIdTool.name]: executeGetModuleByIdToolHandler,
+    // [connectMeldepTool.name]: executeConnectMeldepToolHandler,
 };
 const parseCommandLineArgs = () => {
     const args = process.argv.slice(2);
