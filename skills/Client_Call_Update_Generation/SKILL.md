@@ -1,5 +1,5 @@
 ---
-name: update-generation-for-the-client-call
+name: client_call_update_generation
 description: >
   Generate a structured client status update for a client call — bullet-pointed, PM-ready
   talking points derived from real Meldep ERP data (timesheets, weekly/monthly plans,
@@ -12,11 +12,28 @@ description: >
   "based on this client email", "based on this call script", or any request to communicate
   project progress to a client in a structured, spoken-friendly format.
 allowed-tools:
-  - vsky_tech_platform_mcp:get_timesheet_data_by_daterange
-  - vsky_tech_platform_mcp:get_weekly_plan
-  - vsky_tech_platform_mcp:get_monthly_plan
-  - vsky_tech_platform_mcp:get_all_requirements_by_project
-  - vsky_tech_platform_mcp:get_task_by_task_number
+  - meldep-mcp:get_timesheet_data_by_daterange
+  - meldep-mcp:get_weekly_plan
+  - meldep-mcp:get_monthly_plan
+  - meldep-mcp:get_requirements
+  - meldep-mcp:get_task_by_task_number
+  - meldep-mcp:get_module_by_project_id
+  - meldep-mcp:get_team_member_by_project_id
+  - meldep-mcp:get_employee_workload_report
+  - meldep-mcp:get_project_id
+  - meldep-mcp:get_project_list
+  - meldep-mcp:get_module_by_id
+  - meldep-local:get_timesheet_data_by_daterange
+  - meldep-local:get_weekly_plan
+  - meldep-local:get_monthly_plan
+  - meldep-local:get_requirements
+  - meldep-local:get_task_by_task_number
+  - meldep-local:get_module_by_project_id
+  - meldep-local:get_team_member_by_project_id
+  - meldep-local:get_employee_workload_report
+  - meldep-local:get_project_id
+  - meldep-local:get_project_list
+  - meldep-local:get_module_by_id
 ---
 
 # Skill: Client Call Update Generator
@@ -58,8 +75,14 @@ Use this context to:
 | `get_timesheet_data_by_daterange` | ALWAYS — ground truth of what was actually done |
 | `get_weekly_plan` | ALWAYS — establishes planned intent to compare against actual |
 | `get_monthly_plan` | ALWAYS — frames the call within broader project milestones |
-| `get_all_requirements_by_project` | ALWAYS — maps work to formal deliverables |
+| `get_requirements` | ALWAYS — maps work to formal deliverables |
 | `get_task_by_task_number` | CONDITIONALLY — enrich top 3–5 significant tasks only |
+| `get_module_by_project_id` | CONDITIONALLY — resolve a module referenced in timesheet/task data to its parent requirement(s) |
+| `get_team_member_by_project_id` | CONDITIONALLY — resolve contributor names to roles, or confirm who is actively assigned to the project |
+| `get_employee_workload_report` | CONDITIONALLY — only if the user asks about team capacity or whether a delay ties to resourcing |
+| `get_project_id` | CONDITIONALLY — resolve a project name/keyword to its project ID when the user provides only a project name |
+| `get_project_list` | CONDITIONALLY — list available projects when the user is unsure of the exact project name |
+| `get_module_by_id` | CONDITIONALLY — faster single-module lookup when the specific `moduleId` is already known, instead of listing all modules for the project |
 
 ---
 
@@ -68,7 +91,8 @@ Use this context to:
 ### PHASE 1 — Confirm Parameters
 
 Before any tool calls, confirm or infer:
-- **Project ID / Project Name**
+- **Project ID / Project Name** (if only a project name is given, call `get_project_id` to
+  resolve it; if the exact name is unknown, call `get_project_list` first to help identify it)
 - **Reporting Period** (resolve "this week" / "last week" to exact `MM/DD/YYYY` dates)
 - **Call Date** (defaults to today if not given)
 - **Client Name** (optional — for the header)
@@ -101,7 +125,7 @@ Call `get_monthly_plan`.
 - Note: empty results for certain periods is a known data gap — not an error. Continue without this data.
 
 **Step 2.4 — Requirements Register**
-Call `get_all_requirements_by_project`.
+Call `get_requirements`.
 - Use `page: 1` and `pageSize: 20` (maximum allowed) for the first fetch
 - After displaying/using first-page results, ask the user: "I fetched the first 20
   requirements. Would you like me to fetch the next page?" Fetch page 2, 3, etc. only
@@ -117,6 +141,17 @@ Review timesheet entries. For tasks that:
 - Have a task number referenced in timesheet data
 
 Call `get_task_by_task_number` for the top 3–5 tasks only. Do not over-call.
+
+**Step 3.1 — Resolve Module Context (if needed)**
+If a timesheet or task entry references a module that cannot be mapped to a requirement
+by name alone, call `get_module_by_project_id` (or `get_module_by_id` if the specific
+`moduleId` is already known) to resolve it.
+
+**Step 3.2 — Team Context (if needed)**
+If contributor names need to be resolved to roles, or if the user asks about team
+capacity tied to a delay, call `get_team_member_by_project_id` and/or
+`get_employee_workload_report` respectively. Do not surface individual employee names
+or workload figures in client-facing bullets — see Guardrails.
 
 ---
 
@@ -267,8 +302,10 @@ Use: dependency, additional validation, phased approach, identified and addresse
   shorten, or rewrite it. If the field is empty in ERP, write "No description available in ERP."
 - **Update Status is derived from work done**, not from the ERP status field. Map what
   timesheets and tasks reveal about actual progress this period to determine the status label.
-- **Never expose internal data** — no raw ERP field names, task IDs, or hour counts in
-  CLIENT UPDATES bullets.
+- **Never expose internal data** — no raw ERP field names, task IDs, hour counts, employee
+  names, or workload figures (even if fetched via `get_team_member_by_project_id` or
+  `get_employee_workload_report`) in CLIENT UPDATES bullets. These tools inform internal
+  reasoning only — e.g. framing a delay professionally — never client-facing text.
 - **If timesheets are empty**, do not generate the output. Report this to the user and advise
   investigation before the call.
 - **Requirements with no timesheet activity** should only appear in Anticipated Questions

@@ -1,5 +1,5 @@
 ---
-name: meldep-task-planner
+name: task_generation_and_allocation
 description: >
   Generate a structured task breakdown and employee assignment plan for a Meldep ERP
   requirement, using real Meldep data (requirement details, project team, employee
@@ -10,19 +10,29 @@ description: >
   expects a task/assignment output. Assignment is done by Activity Name (Analysis,
   Compliance, Documentation, Engineering, Implementation, PM, QA, Research, Teamwork) —
   the same fixed activity list used inside Meldep itself — not by matching an employee's
-  job role. Always use this skill before calling any meldep-local tool directly, since it
+  job role. Always use this skill before calling any meldep-mcp tool directly, since it
   defines the correct sequence (requirement → team → tasks → activities → assignment) and
   the locked output format.
 allowed-tools:
-  - meldep-local:get_requirement_by_id
-  - meldep-local:get_all_requirements_by_project
-  - meldep-local:get_requirements_by_status
+  - meldep-mcp:get_requirements
+  - meldep-mcp:get_module_by_project_id
+  - meldep-mcp:get_team_member_by_project_id
+  - meldep-mcp:get_employee_workload_report
+  - meldep-mcp:get_task_by_task_number
+  - meldep-mcp:get_weekly_plan
+  - meldep-mcp:get_monthly_plan
+  - meldep-mcp:get_timesheet_data_by_daterange
+  - meldep-local:get_requirements
+  - meldep-local:get_module_by_project_id
   - meldep-local:get_team_member_by_project_id
   - meldep-local:get_employee_workload_report
   - meldep-local:get_task_by_task_number
   - meldep-local:get_weekly_plan
   - meldep-local:get_monthly_plan
   - meldep-local:get_timesheet_data_by_daterange
+  - meldep-local:get_project_id
+  - meldep-local:get_project_list
+  - meldep-local:get_module_by_id
 ---
 
 # Skill: Meldep Requirement → Task → Activity Assignment Planner
@@ -70,7 +80,7 @@ gets exactly one activity name from this list and exactly one assigned employee.
 
 ## No Write-Back Capability
 
-There is **no create-task or assign-task tool** in meldep-local. This skill produces a
+There is **no create-task or assign-task tool** in meldep-mcp. This skill produces a
 **proposal** — a ready-to-enter plan — not a live write into Meldep. Never state or imply
 that a task or activity has been "created" or "assigned" inside the system. Always make
 clear in the output that these are proposed entries for the PM (or whoever has task-entry
@@ -82,14 +92,17 @@ access) to add into Meldep.
 
 | Tool | When to Call |
 |---|---|
-| `get_requirement_by_id` | ALWAYS — first call, to load the target requirement |
+| `get_requirements` | ALWAYS — first call, to load the target requirement (also used to look up/filter requirements by project or status when the user hasn't given an exact requirement number) |
+| `get_module_by_project_id` | ALWAYS — requires the project UUID; loads the real module list so tasks can be tied to a valid module |
 | `get_team_member_by_project_id` | ALWAYS — requires the project UUID; loads real employees + roles |
 | `get_task_by_task_number` | ALWAYS, for each task already linked to the requirement — prevents duplicating existing work and surfaces real activity/assignee patterns already in use |
 | `get_employee_workload_report` | ALWAYS, for each employee you're considering assigning — used as the deciding signal between candidates |
-| `get_all_requirements_by_project` / `get_requirements_by_status` | CONDITIONALLY — only if the user hasn't given an exact requirement number |
 | `get_weekly_plan` | OPTIONAL — sanity-check an employee isn't already overcommitted that week |
 | `get_monthly_plan` | OPTIONAL — only if user asks about monthly targets |
 | `get_timesheet_data_by_daterange` | OPTIONAL — only if user asks who has actually been logging time on this work |
+| `get_project_id` | OPTIONAL — resolve a project name/keyword to its project UUID when the user gives only a project name, not the UUID |
+| `get_project_list` | OPTIONAL — list available projects when the user is unsure of the exact project name |
+| `get_module_by_id` | OPTIONAL — faster single-module lookup when the specific `moduleId` is already known (e.g. from a linked task's `taskModule.moduleId`), instead of listing all modules for the project |
 
 ---
 
@@ -100,7 +113,9 @@ access) to add into Meldep.
 Before any tool calls, confirm or infer:
 - **Requirement number** (required — ask if missing)
 - **Project UUID** (required to load the team — ask if missing; do not guess or reuse a
-  requirement/task UUID in its place, they are different IDs)
+  requirement/task UUID in its place, they are different IDs). If the user gives only a
+  project name, call `get_project_id` to resolve it; if the exact name is unknown, call
+  `get_project_list` first to help identify it.
 
 If both are available, proceed without asking further questions.
 
@@ -109,16 +124,25 @@ If both are available, proceed without asking further questions.
 ### PHASE 2 — Data Retrieval
 
 **Step 2.1 — Load the Requirement**
-Call `get_requirement_by_id`. Read `requirementDescription`, `requirementModule`,
-`requirementPriority`, `requirementStatus`, and the linked `tasks` array.
+Call `get_requirements`, filtered down to the target requirement (or by project/status if
+the user hasn't given an exact requirement number). Read `requirementDescription`,
+`requirementModule`, `requirementPriority`, `requirementStatus`, and the linked `tasks`
+array.
 
-**Step 2.2 — Load the Project Team**
+**Step 2.2 — Load the Project Modules**
+Call `get_module_by_project_id` with the project UUID. Use this to confirm the
+requirement's module is valid and to correctly label tasks with their real module name.
+If the requirement's `moduleId` is already known (e.g. surfaced directly on the
+requirement record), `get_module_by_id` can be used instead for a faster single-module
+lookup.
+
+**Step 2.3 — Load the Project Team**
 Call `get_team_member_by_project_id` with the project UUID. This returns each employee's
 `employeeId`, `employeeName`, and `role`. Keep `role` for context in the output, but do
 **not** use it as the assignment rule — it is background information, not the matching
 key.
 
-**Step 2.3 — Inspect Existing Linked Tasks**
+**Step 2.4 — Inspect Existing Linked Tasks**
 For each task already linked to the requirement, call `get_task_by_task_number`. This
 shows:
 - Whether similar work is already planned (avoid duplicating it)
@@ -126,7 +150,7 @@ shows:
   already in use on this requirement — useful precedent for how this requirement's work
   has been split into activities so far
 
-**Step 2.4 — Check Workload for Candidate Employees**
+**Step 2.5 — Check Workload for Candidate Employees**
 For each employee you're considering for an assignment, call
 `get_employee_workload_report`. Compare `AssignedHrs` (Open + InProgress) across
 candidates. Prefer the employee with the lighter current load when more than one person
@@ -149,9 +173,9 @@ an `Engineering` activity to build it and a `QA` activity to test it. Do not for
 task into a single activity if the work naturally splits.
 
 **3.3 — Assign Each Activity to One Employee**
-For each activity, pick one employee from the real team list (Phase 2.2). Use, in order:
-1. Anyone already doing matching work on this requirement (seen in Phase 2.3)
-2. Lower current workload (Phase 2.4) when more than one person is a reasonable pick
+For each activity, pick one employee from the real team list (Phase 2.3). Use, in order:
+1. Anyone already doing matching work on this requirement (seen in Phase 2.4)
+2. Lower current workload (Phase 2.5) when more than one person is a reasonable pick
 3. If genuinely no one on the team list is a sensible fit, leave it flagged as
    **Unassigned** rather than forcing a poor match
 
@@ -231,9 +255,9 @@ columns: `Task Name, Activity Name, Assigned Employee, Est. Hours, Priority, Req
   transparency, but the assignment reasoning column must reference actual precedent or
   workload — never "their role is X so they take Y."
 - **Check for duplication** — never propose a task that duplicates one already linked to
-  the requirement (Phase 2.3) unless explicitly extending it; say so if a proposed task
+  the requirement (Phase 2.4) unless explicitly extending it; say so if a proposed task
   builds on an existing one.
 - **No write-back claims** — never say a task or activity was "created," "added," or
   "assigned" in Meldep. It is always a proposal pending manual entry.
-- **Pagination discipline** — if `get_all_requirements_by_project` or similar list calls
-  return more pages than fetched, ask the user before fetching further pages.
+- **Pagination discipline** — if `get_requirements` or similar list calls return more
+  pages than fetched, ask the user before fetching further pages.
