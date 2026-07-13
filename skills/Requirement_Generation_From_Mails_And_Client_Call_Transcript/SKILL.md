@@ -1,5 +1,5 @@
 ---
-name: requirement-generation
+name: requirement_generation
 description: >
   Generate structured, implementation-ready requirements from client call transcripts, meeting
   notes, and client emails. Use this skill whenever a Business Analyst, Project Manager, or
@@ -12,11 +12,25 @@ description: >
   documented requirement. Always use this skill when the source is a client call, email, meeting
   notes, or rough description of a client need.
 allowed-tools:
-  - vsky_tech_platform_mcp:get_all_requirements_by_project
-  - vsky_tech_platform_mcp:get_task_by_task_number
-  - vsky_tech_platform_mcp:get_weekly_plan
-  - vsky_tech_platform_mcp:get_monthly_plan
-  - vsky_tech_platform_mcp:get_timesheet_data_by_daterange
+  - meldep-mcp:get_requirements
+  - meldep-mcp:get_task_by_task_number
+  - meldep-mcp:get_weekly_plan
+  - meldep-mcp:get_monthly_plan
+  - meldep-mcp:get_timesheet_data_by_daterange
+  - meldep-mcp:get_module_by_project_id
+  - meldep-mcp:get_team_member_by_project_id
+  - meldep-mcp:get_employee_workload_report
+  - meldep-local:get_requirements
+  - meldep-local:get_task_by_task_number
+  - meldep-local:get_weekly_plan
+  - meldep-local:get_monthly_plan
+  - meldep-local:get_timesheet_data_by_daterange
+  - meldep-local:get_module_by_project_id
+  - meldep-local:get_team_member_by_project_id
+  - meldep-local:get_employee_workload_report
+  - meldep-local:get_project_id
+  - meldep-local:get_project_list
+  - meldep-local:get_module_by_id
 ---
 
 # Skill: Requirement Generation from Client Input
@@ -42,11 +56,17 @@ plan accordingly.
 
 | Tool | Purpose | When to Use |
 |---|---|---|
-| `get_all_requirements_by_project` | Retrieves all requirements for a given project | ALWAYS — primary duplicate-check source |
+| `get_requirements` | Retrieves requirements for a given project (supports filtering) | ALWAYS — primary duplicate-check source |
 | `get_task_by_task_number` | Retrieves detailed task data by task number | CONDITIONALLY — enrich specific requirement or task context |
 | `get_weekly_plan` | Retrieves the current weekly plan | CONDITIONALLY — check if the requested requirement is already planned |
 | `get_monthly_plan` | Retrieves the current monthly plan | CONDITIONALLY — check alignment with delivery milestones |
 | `get_timesheet_data_by_daterange` | Retrieves logged timesheet entries | CONDITIONALLY — check if work matching this requirement has already been performed |
+| `get_module_by_project_id` | Retrieves module details (and linked requirements/task counts) for a project | CONDITIONALLY — resolve which module a requirement or client-mentioned feature area belongs to |
+| `get_team_member_by_project_id` | Retrieves team members assigned to the project | CONDITIONALLY — resolve stakeholder/requester names to roles for the Stakeholders field |
+| `get_employee_workload_report` | Retrieves an employee's task distribution and hour totals | CONDITIONALLY — only if priority/timeline assumptions need to account for team capacity |
+| `get_project_id` | Resolves a project name/keyword to its project ID | CONDITIONALLY — use when the user provides only a project name, not the ID |
+| `get_project_list` | Lists available projects | CONDITIONALLY — use when the user is unsure of the exact project name |
+| `get_module_by_id` | Faster single-module lookup by known `moduleId` | CONDITIONALLY — use instead of `get_module_by_project_id` when the specific `moduleId` is already known |
 
 > **Rule:** Never assume a tool is unavailable. Always attempt tool calls in the sequence
 > defined below. If a tool returns no results, record that and proceed — do not skip the step.
@@ -59,7 +79,9 @@ plan accordingly.
 
 Before making any tool calls, confirm or infer the following from the user's message:
 
-- **Project ID or Project Name** — required for all tool calls
+- **Project ID or Project Name** — required for all tool calls. If only a project name is
+  given, call `get_project_id` to resolve it; if the exact name is unknown, call
+  `get_project_list` first to help identify it.
 - **Source Type** — transcript / meeting notes / email / rough description
 - **Client Name** — for attribution in the requirement
 - **Date of Input** — when the client conversation or email occurred
@@ -99,10 +121,17 @@ Are there any systems, modules, or other requirements this depends on? Did the c
 integrations, existing data, or third-party services?
 
 **2.7 — Stakeholders**
-Who requested this? Who will be affected? Who needs to approve or sign off?
+Who requested this? Who will be affected? Who needs to approve or sign off? If names need
+to be resolved to roles or confirmed as active on the project, call
+`get_team_member_by_project_id`.
 
 **2.8 — Priority Signals**
 Did the client indicate urgency, importance, or a target date? Extract and document this.
+
+**2.9 — Module Mapping (if needed)**
+If the client's request clearly maps to a specific module or feature area, resolve it via
+`get_module_by_project_id` (or `get_module_by_id` if the `moduleId` is already known) so
+the requirement can be correctly labelled with a real module name.
 
 ---
 
@@ -112,7 +141,7 @@ Did the client indicate urgency, importance, or a target date? Extract and docum
 > this search first.**
 
 **Step 3.1 — Retrieve All Project Requirements**
-Call `get_all_requirements_by_project` with the confirmed Project ID.
+Call `get_requirements` with the confirmed Project ID.
 Store the full list of returned requirements.
 
 **Step 3.2 — Search by Title**
@@ -258,6 +287,43 @@ Client Input Date: [Date if provided]
 
 ```
 
+### When User Asks for Client Call Notes
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝  CLIENT CALL NOTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Key Discussion Points:
+• [Key discussion point 1]
+• [Key discussion point 2]
+• [Key discussion point 3]
+• [Additional important discussions]
+
+──────────────────────────────────────────────────────
+Key Decisions:
+• [Decision 1]
+• [Decision 2]
+• [Decision 3]
+
+──────────────────────────────────────────────────────
+Next Steps:
+• [Immediate next step]
+• [Upcoming follow-up task]
+• [Expected milestone or deliverable]
+
+──────────────────────────────────────────────────────
+Action Items / To-Do List:
+| Task | Owner | Priority | Status |
+|------|-------|----------|--------|
+| [Task] | [Person/Team] | High/Medium/Low | Pending/In Progress |
+
+──────────────────────────────────────────────────────
+Source:
+Derived from: [Client Call Transcript / Meeting Notes]
+Meeting Date: [Date if provided]
+Participants: [Names if mentioned]
+```
 ---
 
 ## Handling Multiple Requirements in One Input
@@ -288,7 +354,7 @@ Total New: [N] | Total Duplicates: [N] | Total Partial Matches: [N]
 
 These rules are non-negotiable and must be followed on every execution:
 
-- **Always call `get_all_requirements_by_project` first** — before generating any requirement.
+- **Always call `get_requirements` first** — before generating any requirement.
 - **Never generate a requirement without completing Phase 3** — no exceptions.
 - **Always state which tools were called** — list them explicitly in every output block.
 - **If a tool returns an error or empty result**, record this in the output and explain
@@ -300,6 +366,13 @@ These rules are non-negotiable and must be followed on every execution:
   number is mentioned in the client input or when a partial match needs deeper investigation.
 - **Call `get_weekly_plan` or `get_monthly_plan` when priority or timeline is ambiguous** —
   these provide delivery context that informs priority assignment.
+- **Call `get_module_by_project_id` or `get_module_by_id` when a module/feature area needs
+  resolving** — use `get_module_by_id` in place of `get_module_by_project_id` when the
+  specific `moduleId` is already known, for a faster lookup.
+- **Call `get_team_member_by_project_id` when stakeholder names need role context** — use
+  this instead of guessing a stakeholder's role.
+- **Call `get_project_id` or `get_project_list` when the project is identified only by
+  name** — resolve to a project ID before any other tool call requiring it.
 
 ---
 

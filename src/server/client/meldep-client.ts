@@ -53,6 +53,7 @@ export class MeldepClient {
 
     async getWeeklyPlanDetails(projectId, skipIndex, takeCount, weekEndDate) {
         await this.ensureAuthenticated();
+
         try {
             const response = await this.httpClient.post(
                 ERP_ENDPOINTS.PROJECTS.GET_PROJECT_WEEKLY_PLAN_DETAILS,
@@ -67,10 +68,27 @@ export class MeldepClient {
                     },
                 }
             );
-            logger.info('Successfully fetched weekly plan details.');
+
+            logger.info(
+                { projectId, skipIndex, takeCount, weekEndDate },
+                'Successfully fetched weekly plan details.'
+            );
+
             return response.data;
         } catch (error) {
             logger.error({ error }, 'Failed to fetch weekly plan details.');
+            throw error;
+        }
+    }
+
+    async getProjectList(payload) {
+        await this.ensureAuthenticated();
+        try {
+            const response = await this.httpClient.post(ERP_ENDPOINTS.PROJECTS.LIST, payload);
+            logger.info('Successfully fetched project list by keyword.');
+            return response.data;
+        } catch (error) {
+            logger.error({ error }, 'Failed to fetch project list by keyword.');
             throw error;
         }
     }
@@ -313,5 +331,79 @@ export class MeldepClient {
                 );
             }
         }
+    // get_module_by_id
+    async getModuleById(moduleId) {
+        await this.ensureAuthenticated();
+
+        try {
+            if (!moduleId || typeof moduleId !== 'string') {
+                throw new Error('Module ID is required and must be a string');
+            }
+
+            const response = await this.httpClient.post(
+                ERP_ENDPOINTS.REQUIREMENT.LIST,
+                {
+                    page: 1,
+                    pageSize: 100,
+                    sortBy: 'status.dropDownValue',
+                    sorts: {},
+                    descending: false,
+                    searchText: '',
+                    requirementNumber: '0',
+                    projectIds: [],
+                    projectModuleIds: [moduleId],
+                    requirementGroupIds: [],
+                    name: '',
+                    requirementType: null,
+                    statusIds: [],
+                    identifiedByIds: [],
+                    fromDate: null,
+                    toDate: null,
+                    requirementTagIds: [],
+                }
+            );
+
+            logger.info(
+                `Successfully fetched module details for moduleId: ${moduleId}`
+            );
+
+            return response.data;
+
+        } catch (error) {
+            logger.error(
+                { error },
+                `Failed to fetch module details for moduleId: ${moduleId}`
+            );
+
+            throw new Error(
+                error?.message || 'Failed to fetch module details'
+            );
+        }
     }
+    // get_project_list
+    async getProjectList(payload) {
+        await this.ensureAuthenticated();
+
+        try {
+            const response = await this.httpClient.post(
+                ERP_ENDPOINTS.PROJECTS.LIST,
+                payload
+            );
+
+            logger.info('Successfully fetched project list.');
+
+            return response.data;
+
+        } catch (error) {
+            logger.error(
+                { error },
+                'Failed to fetch project list.'
+            );
+
+            throw new Error(
+                error?.message || 'Failed to fetch project list'
+            );
+        }
+    }
+}
 export const meldepClient = new MeldepClient();

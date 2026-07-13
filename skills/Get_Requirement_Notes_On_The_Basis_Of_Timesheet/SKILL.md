@@ -1,13 +1,27 @@
 ---
-name: timesheet-to-implementation-notes
+name: get_requirement_notes_on_the_basis_of_timesheet
 description: >
   Converts timesheet entries into ERP implementation notes or minimal Meldep ERP notes. Triggers: "write implementation notes from timesheets", "document what was done on this requirement", "create engineering notes", "audit completed work", "append notes to requirements", "what exactly was implemented for REQ-XXX?".
 tools:
-  - vsky_tech_platform_mcp:get_timesheet_data_by_daterange
-  - vsky_tech_platform_mcp:get_task_by_task_number
-  - vsky_tech_platform_mcp:get_all_requirements_by_project
-  - vsky_tech_platform_mcp:get_weekly_plan
-  - vsky_tech_platform_mcp:get_monthly_plan
+  - meldep-mcp:get_timesheet_data_by_daterange
+  - meldep-mcp:get_task_by_task_number
+  - meldep-mcp:get_requirements
+  - meldep-mcp:get_weekly_plan
+  - meldep-mcp:get_monthly_plan
+  - meldep-mcp:get_team_member_by_project_id
+  - meldep-mcp:get_employee_workload_report
+  - meldep-mcp:get_module_by_project_id
+  - meldep-local:get_timesheet_data_by_daterange
+  - meldep-local:get_task_by_task_number
+  - meldep-local:get_requirements
+  - meldep-local:get_weekly_plan
+  - meldep-local:get_monthly_plan
+  - meldep-local:get_team_member_by_project_id
+  - meldep-local:get_employee_workload_report
+  - meldep-local:get_project_id
+  - meldep-local:get_project_list
+  - meldep-local:get_module_by_project_id
+  - meldep-local:get_module_by_id
 ---
 
 # Skill: Timesheet-to-Requirement Implementation Notes
@@ -29,15 +43,21 @@ to the project's institutional knowledge base.
 ---
  
 ## Tool Inventory
- 
+
 | Tool | Inferred Purpose |
 |---|---|
 | `get_timesheet_data_by_daterange` | **Primary source** — retrieves logged work entries with activity descriptions, hours, and employee notes for a given date range. |
 | `get_task_by_task_number` | Retrieves full task context (description, acceptance criteria, status, assignee) to enrich implementation notes with formal task specifications. |
-| `get_all_requirements_by_project` | Loads the complete requirement register to enable precise mapping of timesheet work to formal requirements. |
+| `get_requirements` | Loads the requirement register to enable precise mapping of timesheet work to formal requirements. |
 | `get_weekly_plan` | Retrieves weekly planned tasks to provide additional context on the intent behind completed work. |
 | `get_monthly_plan` | *(Standby — invoke for long-range implementation audits or when monthly milestone context is needed.)* |
- 
+| `get_team_member_by_project_id` | Retrieves team members assigned to the project, with employee/role details — used to resolve names to roles when sensitivity requires role-only references, and to validate contributor attribution. |
+| `get_employee_workload_report` | *(Standby — invoke when an implementation note needs workload context, e.g. to note if a contributor was spread across multiple concurrent tasks during the audit period.)* |
+| `get_project_id` | *(Standby — invoke to resolve a project name/keyword to its project ID when the user provides only a project name.)* |
+| `get_project_list` | *(Standby — invoke to list available projects when the user is unsure of the exact project name.)* |
+| `get_module_by_project_id` | Retrieves module details (and linked requirements/task counts) for a project — used when a timesheet or task entry references a module that needs mapping to its parent requirements. |
+| `get_module_by_id` | *(Standby — invoke when a specific `moduleId` is already known, e.g. from a timesheet entry or task, for a faster single-module lookup instead of listing all modules for the project.)* |
+
 ---
  
 ## Core Skill: Timesheet-to-Requirement Implementation Notes
@@ -59,7 +79,9 @@ ERP system or storage in a project knowledge base.
  
 **Step 1.1 — Confirm Inputs**
 Before invoking any tools, confirm:
-- **Project Name / Project ID** — required for all ERP lookups.
+- **Project Name / Project ID** — required for all ERP lookups. If the user gives only a
+  project name (no ID) and `get_project_id` / `get_project_list` are available, resolve the
+  ID via a keyword lookup before proceeding to Phase 2.
 - **Audit Period** — the `start_date` and `end_date` for the timesheet range to audit.
   Resolve relative terms ("last sprint", "last week") to exact `YYYY-MM-DD` values.
 - **Scope Filter** *(optional)* — specific requirement IDs, task numbers, or employee roles
@@ -91,11 +113,11 @@ From the response, for each timesheet entry capture:
 - `hours_logged`
 - Any attached notes or comments
 **Step 2.2 — Fetch Requirements Register**
-Call `get_all_requirements_by_project`.
+Call `get_requirements`.
  
 ```
-Tool: get_all_requirements_by_project
-Purpose: Load the full requirement list to serve as the mapping target —
+Tool: get_requirements
+Purpose: Load the requirement list to serve as the mapping target —
          each timesheet cluster must be linked to one or more formal requirements.
 ```
  
@@ -107,6 +129,17 @@ Tool: get_weekly_plan
 Purpose: Understand the planned intent behind the work so that implementation notes
          accurately reflect whether execution aligned with, deviated from, or extended
          the original plan.
+```
+
+**Step 2.4 — Fetch Team Member Roster**
+Call `get_team_member_by_project_id`.
+
+```
+Tool: get_team_member_by_project_id
+Purpose: Resolve each contributor's name to their role on the project. Required when
+         the "Respect data sensitivity" guardrail applies (role/team references instead
+         of names), and useful for validating that timesheet entries come from
+         team members actually assigned to the project.
 ```
  
 ---
@@ -125,7 +158,24 @@ Purpose: Pull the formal task specification — description, acceptance criteria
 Invoke: For each distinct task number found in timesheet data. Cap at 10 calls;
         if more than 10 unique tasks exist, prioritize by highest hours logged.
 ```
- 
+
+**Step 3.2 — Resolve Module Context (if needed)**
+If a timesheet or task entry references a module that cannot be mapped directly to a
+requirement, resolve it before proceeding to Phase 4:
+
+```
+Tool: get_module_by_project_id
+Purpose: Retrieve module details and linked requirements for the project when a module
+         name/reference needs mapping to its parent requirement(s).
+Invoke: When a `moduleId` is not already known — pass the project ID (and moduleId to
+        narrow, if available).
+
+Tool: get_module_by_id
+Purpose: Faster single-module lookup when the specific `moduleId` is already known
+         (e.g. surfaced from a timesheet entry or a task's taskModule.moduleId).
+Invoke: In place of get_module_by_project_id when moduleId is already known.
+```
+
 ---
  
 #### PHASE 4 — Clustering & Mapping
@@ -141,7 +191,7 @@ For each cluster:
 - Aggregate activity description
 **Step 4.2 — Map Clusters to Requirements**
 For each cluster, identify the best-matching formal requirement(s) from
-`get_all_requirements_by_project`. Use this mapping logic:
+`get_requirements`. Use this mapping logic:
  
 | Signal | Mapping Action |
 |---|---|
@@ -174,7 +224,7 @@ For each requirement that had associated timesheet activity, produce one
 
 ```
 **Requirement ID:** REQ-XXX
-**Requirement Name:** [Title from get_all_requirements_by_project]
+**Requirement Name:** [Title from get_requirements]
 **Status:** [Status of requirement on the basis of work done, in one sentence]
 **Total Audit Period:** [Start Date – End Date]
 
@@ -207,6 +257,15 @@ CRITICAL RULES:
   halt and notify the user — no notes can be generated without source data.
 - For audits spanning more than one month, call `get_monthly_plan` in Phase 2 to provide
   adequate milestone context for the implementation notes.
+- If a contributor's logged hours look unusually thin, fragmented, or concurrent with
+  many unrelated tasks, call `get_employee_workload_report` to check whether they were
+  spread across multiple projects/tasks during the audit period before flagging their
+  work as incomplete.
+- Use `get_team_member_by_project_id` (not guesswork) to map names to roles whenever
+  role-only references are required by the sensitivity guardrail.
+- If a timesheet or task entry references a module that cannot be mapped to a requirement
+  by name alone, resolve it via `get_module_by_id` (when the moduleId is known) or
+  `get_module_by_project_id` (to list project modules) before flagging the work as unmapped.
 - **ERP Note Block mode** must still be rooted only in actual timesheet data and paraphrased
   per the rules above; omit the Requirement Description line entirely when no description is
   available — never write "N/A" or invent one.
