@@ -53,6 +53,7 @@ export class MeldepClient {
 
     async getWeeklyPlanDetails(projectId, skipIndex, takeCount, weekEndDate) {
         await this.ensureAuthenticated();
+
         try {
             const response = await this.httpClient.post(
                 ERP_ENDPOINTS.PROJECTS.GET_PROJECT_WEEKLY_PLAN_DETAILS,
@@ -67,7 +68,12 @@ export class MeldepClient {
                     },
                 }
             );
-            logger.info('Successfully fetched weekly plan details.');
+
+            logger.info(
+                { projectId, skipIndex, takeCount, weekEndDate },
+                'Successfully fetched weekly plan details.'
+            );
+
             return response.data;
         } catch (error) {
             logger.error({ error }, 'Failed to fetch weekly plan details.');

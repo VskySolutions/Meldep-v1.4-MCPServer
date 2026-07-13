@@ -1,39 +1,99 @@
 // @ts-nocheck
 import { cleanHtml } from '../../../utils/html-to-text.js';
-export function mapWeeklyPlanResponse(rawPlan) {
-    if (!rawPlan || !Array.isArray(rawPlan)) {
+
+function getPersonName(personWrapper) {
+    const person = personWrapper?.person || personWrapper || {};
+
+    const firstName = person.firstName || '';
+    const lastName = person.lastName || '';
+
+    return `${firstName} ${lastName}`.trim();
+}
+
+function mapAssignedTo(assignments) {
+    if (!Array.isArray(assignments)) {
         return [];
     }
-    return rawPlan.map((plan) => {
-        const mappedPlan = {
-            id: plan.id,
-            weekDate: plan.weekDate,
-            projectWeeklyPlanDatesLines: []
-        };
-        if (plan.projectWeeklyPlanDatesLines && Array.isArray(plan.projectWeeklyPlanDatesLines)) {
-            mappedPlan.projectWeeklyPlanDatesLines = plan.projectWeeklyPlanDatesLines.map((line) => {
-                const mappedLine = {
-                    expectedDescription: cleanHtml(line.expectedDescription || ''),
-                    actualDescription: cleanHtml(line.actualDescription || ''),
-                    expectedDescriptionCreatedBy: line.expectedDescriptionCreatedBy?.person?.firstName + ' ' + line.expectedDescriptionCreatedBy?.person?.lastName || '',
-                    projectWeeklyPlanDatesLinesAssignedTo: [],
-                    employeeEstimateHoursForWeekSummaryList: []
-                };
-                if (line.projectWeeklyPlanDatesLinesAssignedTo && Array.isArray(line.projectWeeklyPlanDatesLinesAssignedTo)) {
-                    mappedLine.projectWeeklyPlanDatesLinesAssignedTo = line.projectWeeklyPlanDatesLinesAssignedTo.map((assignment) => ({
-                        name: assignment.employee?.person?.firstName + ' ' + assignment.employee?.person?.lastName || '',
-                        estimateHrs: assignment.estimatedHours || 0,
-                    }));
-                }
-                if (line.employeeEstimateHoursForWeekSummaryList && Array.isArray(line.employeeEstimateHoursForWeekSummaryList)) {
-                    mappedLine.employeeEstimateHoursForWeekSummaryList = line.employeeEstimateHoursForWeekSummaryList.map((summary) => ({
-                        employeeName: summary.employee?.person?.firstName + ' ' + summary.employee?.person?.lastName || '',
-                        totalEstimatedHours: summary.totalEstimatedHours || 0,
-                    }));
-                }
-                return mappedLine;
-            });
+
+    return assignments.map((assignment) => ({
+        name: getPersonName(assignment.employee),
+        estimateHrs: assignment.estimatedHours || 0,
+    }));
+}
+
+function mapEmployeeSummary(summaryList) {
+    if (!Array.isArray(summaryList)) {
+        return [];
+    }
+
+    return summaryList.map((summary) => ({
+        employeeName: getPersonName(summary.employee),
+        totalEstimatedHours: summary.totalEstimatedHours || 0,
+    }));
+}
+
+function mapPlanLines(lines) {
+    if (!Array.isArray(lines)) {
+        return [];
+    }
+
+    return lines.map((line) => ({
+        expectedDescription: cleanHtml(line.expectedDescription || ''),
+        actualDescription: cleanHtml(line.actualDescription || ''),
+        expectedDescriptionCreatedBy: getPersonName(
+            line.expectedDescriptionCreatedBy
+        ),
+        projectWeeklyPlanDatesLinesAssignedTo: mapAssignedTo(
+            line.projectWeeklyPlanDatesLinesAssignedTo
+        ),
+        employeeEstimateHoursForWeekSummaryList: mapEmployeeSummary(
+            line.employeeEstimateHoursForWeekSummaryList
+        ),
+    }));
+}
+
+export function mapWeeklyPlanResponse(rawPlan, requestedProjectId = '') {
+    const plans = Array.isArray(rawPlan)
+        ? rawPlan
+        : rawPlan?.weeklyPlanList || [];
+
+    if (!Array.isArray(plans)) {
+        return [];
+    }
+
+    return plans.flatMap((plan) => {
+        const projectId =
+            plan.projectId ||
+            plan.project?.id ||
+            requestedProjectId ||
+            '';
+
+        const weekDates = Array.isArray(plan.projectWeeklyPlanDates)
+            ? plan.projectWeeklyPlanDates
+            : [];
+
+        if (weekDates.length > 0) {
+            return weekDates.map((weekDateBlock) => ({
+                id: weekDateBlock.id || plan.id || '',
+                projectId,
+                weekDate: weekDateBlock.weekDate || plan.weekDate || '',
+                isApproved: weekDateBlock.isApproved || false,
+                isCompleted: weekDateBlock.isCompleted || false,
+                completionPercentage:
+                    weekDateBlock.completionPercentage || 0,
+                projectWeeklyPlanDatesLines: mapPlanLines(
+                    weekDateBlock.projectWeeklyPlanDatesLines
+                ),
+            }));
         }
-        return mappedPlan;
+
+        return {
+            id: plan.id || '',
+            projectId,
+            weekDate: plan.weekDate || '',
+            projectWeeklyPlanDatesLines: mapPlanLines(
+                plan.projectWeeklyPlanDatesLines
+            ),
+        };
     });
 }
