@@ -8,14 +8,14 @@ import { getRequirementsTool, executeGetRequirementsToolHandler } from './tools/
 import { executeGetTaskByTaskNumberToolHandler, getTaskByTaskNumberTool } from './tools/task/get-task-by-task-number.tool.js';
 import { getModuleByProjectIdTool, executeGetModuleByProjectIdToolHandler } from './tools/module-by-project-id/get-module-by-project-id.tool.js';
 import { getProjectIdTool, executeGetProjectIdToolHandler } from './tools/get-project-id/get-project-id.tool.js';
-import { getProjectListTool, executeGetProjectListToolHandler } from './tools/project-list/get_project_list.tool.js';
-import { getModuleByIdTool, executeGetModuleByIdToolHandler } from './tools/project-module/get_module_by_id.tool.js';
+import { getProjectListTool, executeGetProjectListToolHandler } from './tools/project-list/get-project-list.tool.js';
+import { getModuleByIdTool, executeGetModuleByIdToolHandler } from './tools/project-module/get-module-by-id.tool.js';
 // import { connectMeldepTool, executeConnectMeldepToolHandler } from './tools/auth/connect-meldep.tool.js';
 
-import {getTeamMembersByProjectIdTool, executeGetTeamMembersByProjectIdToolHandler, } from './tools/team-member-by-project-id/get_team_member_by_project_id.tool.js';
+import {getTeamMembersByProjectIdTool, executeGetTeamMembersByProjectIdToolHandler, } from './tools/team-member-by-project-id/get-team-member-by-project-id.tool.js';
 import { login } from './auth/login.js';
 import {getTimesheetDataByDateRangeTool, executeGetTimesheetDataByDateRangeToolHandler, } from './tools/timesheet/get-timesheet-data-by-daterange.tool.js';
-import {getEmployeeWorkloadReportTool, executeGetEmployeeWorkloadReportToolHandler, } from './tools/employee-workload-report/get_employee_workload_report.tool.js';
+import {getEmployeeWorkloadReportTool, executeGetEmployeeWorkloadReportToolHandler, } from './tools/employee-workload-report/get-employee-workload-report.tool.js';
 import { sessionStore } from './auth/session-store.js';
 /**
  * IMPORTANT:
