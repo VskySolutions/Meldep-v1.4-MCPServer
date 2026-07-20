@@ -16,7 +16,6 @@ import {getTeamMembersByProjectIdTool, executeGetTeamMembersByProjectIdToolHandl
 import { login } from './auth/login.js';
 import {getTimesheetDataByDateRangeTool, executeGetTimesheetDataByDateRangeToolHandler, } from './tools/timesheet/get-timesheet-data-by-daterange.tool.js';
 import {getEmployeeWorkloadReportTool, executeGetEmployeeWorkloadReportToolHandler, } from './tools/employee-workload-report/get-employee-workload-report.tool.js';
-import { sessionStore } from './auth/session-store.js';
 /**
  * IMPORTANT:
  * MCP servers MUST NOT write to stdout.
@@ -56,7 +55,6 @@ const parseCommandLineArgs = () => {
     const args = process.argv.slice(2);
     let username = '';
     let password = '';
-    let projectId = '';
     for (let i = 0; i < args.length; i++) {
         if (args[i] === '--username' && i + 1 < args.length) {
             username = args[i + 1];
@@ -66,20 +64,15 @@ const parseCommandLineArgs = () => {
             password = args[i + 1];
             i++;
         }
-        else if (args[i] === '--projectId' && i + 1 < args.length) {
-            projectId = args[i + 1];
-            i++;
-        }
     }
-    if (!username || !password || !projectId) {
+    if (!username || !password) {
         throw new Error('Missing required arguments.\n' +
             'Usage:\n' +
-            'npm run dev -- --username <username> --password <password> --projectId <projectId>');
+            'npm run dev -- --username <username> --password <password>');
     }
     return {
         username,
         password,
-        projectId,
     };
 };
 const startServer = async () => {
@@ -88,7 +81,7 @@ const startServer = async () => {
         /**
          * Parse CLI arguments
          */
-        const { username, password, projectId } = parseCommandLineArgs();
+        const { username, password} = parseCommandLineArgs();
         logger.error(`Authenticating user: ${username}`);
         /**
          * Authenticate
@@ -102,12 +95,6 @@ const startServer = async () => {
             throw new Error('Authentication failed. Please check your credentials.');
         }
         logger.error('Authentication successful');
-        /**
-         * Store project ID
-         */
-        sessionStore.set('projectId', projectId);
-        // sessionStore.set('userId', username);
-        logger.error('Storing project ID: %s', projectId);
         /**
          * Create MCP server
          */
