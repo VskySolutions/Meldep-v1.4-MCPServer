@@ -24,4 +24,10 @@ export const ERP_ENDPOINTS = {
     PROJECT_ACTIVITIES: {
     LIST_EXPAND_COLLAPSE: '/project-activities/list-expand-collapse',
     },
+    TEST_CASE: {
+    LIST: '/test-case/list',
+    },
+    TEST_PLAN: {
+    LIST: '/test-plan/list',
+    },
 };
