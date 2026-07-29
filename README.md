@@ -20,13 +20,11 @@ claude config
         "<meldep username>",
         "--password",
         "<meldep password>",
-        "--projectId",
-        "<meldep project id>"
     ]
 }
 ```
 
 ### Connect to claude code
 ```bash
-claude mcp add --transport stdio meldep -- npx -y @vsky-solutions/meldep-mcp --username <username> --password <Password> --projectId <Project Id>
+claude mcp add --transport stdio meldep -- npx -y @vsky-solutions/meldep-mcp --username <username> --password <Password>
 ```
