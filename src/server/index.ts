@@ -10,6 +10,8 @@ import { getModuleByProjectIdTool, executeGetModuleByProjectIdToolHandler } from
 import { getProjectIdTool, executeGetProjectIdToolHandler } from './tools/get-project-id/get-project-id.tool.js';
 import { getProjectListTool, executeGetProjectListToolHandler } from './tools/project-list/get_project_list.tool.js';
 import { getModuleByIdTool, executeGetModuleByIdToolHandler } from './tools/project-module/get_module_by_id.tool.js';
+import { writeRequirementNotesTool, executeWriteRequirementNotesToolHandler } from './tools/requirement-notes/write-requirement-notes.tool.js';
+import { writeWeeklyActualTool, executeWriteWeeklyActualToolHandler } from './tools/weekly-actual/write-weekly-actual.tool.js';
 // import { connectMeldepTool, executeConnectMeldepToolHandler } from './tools/auth/connect-meldep.tool.js';
 
 import {getTeamMembersByProjectIdTool, executeGetTeamMembersByProjectIdToolHandler, } from './tools/team-member-by-project-id/get_team_member_by_project_id.tool.js';
@@ -37,7 +39,7 @@ const logger = {
     error: (...args: any[]) => console.error(...args),
 };
 
-const tools = [getMonthlyPlanTool, getWeeklyPlanTool, getRequirementsTool, getTaskByTaskNumberTool, getModuleByProjectIdTool, getTimesheetDataByDateRangeTool, getTeamMembersByProjectIdTool, getEmployeeWorkloadReportTool, getProjectIdTool, getProjectListTool, getModuleByIdTool];
+const tools = [getMonthlyPlanTool, getWeeklyPlanTool, getRequirementsTool, getTaskByTaskNumberTool, getModuleByProjectIdTool, getTimesheetDataByDateRangeTool, getTeamMembersByProjectIdTool, getEmployeeWorkloadReportTool, getProjectIdTool, getProjectListTool, getModuleByIdTool, writeRequirementNotesTool, writeWeeklyActualTool];
 const toolHandlers: ToolHandlers = {
     get_monthly_plan: executeGetMonthlyPlanToolHandler,
     get_weekly_plan: executeGetWeeklyPlanToolHandler,
@@ -50,6 +52,8 @@ const toolHandlers: ToolHandlers = {
     [getEmployeeWorkloadReportTool.name]: executeGetEmployeeWorkloadReportToolHandler,
     [getProjectListTool.name]: executeGetProjectListToolHandler,
     [getModuleByIdTool.name]: executeGetModuleByIdToolHandler,
+    [writeRequirementNotesTool.name]: executeWriteRequirementNotesToolHandler,
+    [writeWeeklyActualTool.name]: executeWriteWeeklyActualToolHandler,
     // [connectMeldepTool.name]: executeConnectMeldepToolHandler,
 };
 const parseCommandLineArgs = () => {

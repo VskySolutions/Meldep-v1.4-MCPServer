@@ -81,6 +81,21 @@ export class MeldepClient {
         }
     }
 
+    async saveWeeklyPlanDateLine(payload) {
+        await this.ensureAuthenticated();
+        try {
+            const response = await this.httpClient.post(
+                ERP_ENDPOINTS.PROJECTS.SAVE_PROJECT_WEEKLY_PLAN_DATE_LINE,
+                payload
+            );
+            logger.info('Successfully saved weekly plan date line.');
+            return response.data;
+        } catch (error) {
+            logger.error({ error }, 'Failed to save weekly plan date line.');
+            throw error;
+        }
+    }
+
     async getProjectList(payload) {
         await this.ensureAuthenticated();
         try {
@@ -404,6 +419,63 @@ export class MeldepClient {
                 error?.message || 'Failed to fetch project list'
             );
         }
+    }
+
+    // add_requirement_note
+    async addRequirementNote(requirementNumber, noteText) {
+        await this.ensureAuthenticated();
+        try {
+            let uuid = requirementNumber;
+            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requirementNumber);
+
+            if (!isUUID) {
+                const listResult = await this.getAllRequirementsByProject({
+                    page: 1,
+                    pageSize: 1,
+                    sortBy: 'status.dropDownValue',
+                    descending: false,
+                    sorts: {},
+                    searchText: '',
+                    requirementNumber,
+                    projectIds: [],
+                    projectModuleIds: [],
+                    requirementGroupIds: [],
+                    name: '',
+                    requirementType: null,
+                    statusIds: [],
+                    identifiedByIds: [],
+                    fromDate: null,
+                    toDate: null,
+                    requirementTagIds: [],
+                });
+
+                const match = listResult?.data?.[0];
+                if (!match || !match.id) {
+                    throw new Error(`No requirement found with number "${requirementNumber}".`);
+                }
+
+                uuid = match.id;
+            }
+
+            const response = await this.httpClient.post(
+                ERP_ENDPOINTS.NOTES.CREATE,
+                {
+                    subModuleId: uuid,
+                    type: 'Requirement',
+                    note: noteText,
+                }
+            );
+
+            logger.info('Successfully added requirement note.');
+            return response.data;
+        } catch (error) {
+            logger.error({ error }, 'Failed to add requirement note.');
+            throw error;
+        }
+    }
+
+    async addWeeklyActuals(projectId, weekendDate, weeklyActual) {
+        await this.ensureAuthenticated();   
     }
 }
 export const meldepClient = new MeldepClient();
