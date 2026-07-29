@@ -23,10 +23,16 @@ export const ERP_ENDPOINTS = {
     },
     // Add other ERP endpoints as needed
     PROJECT_ACTIVITIES: {
-    LIST_EXPAND_COLLAPSE: '/project-activities/list-expand-collapse',
+        LIST_EXPAND_COLLAPSE: '/project-activities/list-expand-collapse',
     },
     NOTES: {
         LIST: '/notes',
         CREATE: '/notes',
+    },
+    TEST_CASE: {
+        LIST: '/test-case/list',
+    },
+    TEST_PLAN: {
+        LIST: '/test-plan/list',
     },
 };

@@ -242,7 +242,7 @@ export class MeldepClient {
         }
     }
 
-    // add new get-team-member-by-project-id
+    //get-team-member-by-project-id
     async getTeamMembersByProjectId(projectId) {
         await this.ensureAuthenticated();
 
@@ -268,7 +268,7 @@ export class MeldepClient {
         }
     }
 
-    //get_employee_report
+    //get_employee_workload_report
     async getEmployeeWorkloadReport(employeeId) {
             await this.ensureAuthenticated();
 
@@ -346,6 +346,7 @@ export class MeldepClient {
                 );
             }
         }
+
     // get_module_by_id
     async getModuleById(moduleId) {
         await this.ensureAuthenticated();
@@ -395,6 +396,7 @@ export class MeldepClient {
             );
         }
     }
+
     // get_project_list
     async getProjectList(payload) {
         await this.ensureAuthenticated();
@@ -475,7 +477,341 @@ export class MeldepClient {
     }
 
     async addWeeklyActuals(projectId, weekendDate, weeklyActual) {
-        await this.ensureAuthenticated();   
+        await this.ensureAuthenticated();
+    }
+
+    // get_test_case_by_id
+    async getTestCaseById(testCaseId: string) {
+        await this.ensureAuthenticated();
+
+        try {
+            if (
+                !testCaseId ||
+                typeof testCaseId !== 'string' ||
+                testCaseId.trim() === ''
+            ) {
+                throw new Error(
+                    'Test Case ID is required and must be a valid UUID'
+                );
+            }
+
+            const normalizedTestCaseId = testCaseId.trim();
+            const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+            if (!uuidPattern.test(normalizedTestCaseId)) {
+                throw new Error('Test Case ID must be a valid UUID');
+            }
+
+            const payload = {
+                page: 1,
+                pageSize: 100,
+                sortBy: 'testCaseNumber',
+                sorts: {},
+                descending: true,
+                searchText: '',
+                testCaseNumber: 0,
+                projectIds: [],
+                testPlanIds: [],
+                statusIds: [],
+                testedByIds: [],
+                fromDate: null,
+                toDate: null,
+            };
+
+            const response = await this.httpClient.post(
+                ERP_ENDPOINTS.TEST_CASE.LIST,
+                payload
+            );
+
+            const responseData = response?.data;
+            const testCases = Array.isArray(responseData)
+                ? responseData
+                : Array.isArray(responseData?.data)
+                    ? responseData.data
+                    : [];
+
+            const normalizedIdLowerCase = normalizedTestCaseId.toLowerCase();
+            const matchedTestCase = testCases.find((testCase: any) => {
+                const recordId = String(testCase?.id ?? '')
+                    .trim()
+                    .toLowerCase();
+
+                return recordId === normalizedIdLowerCase;
+            });
+
+            logger.info(
+                matchedTestCase
+                    ? `Successfully fetched test case details for ID: ${normalizedTestCaseId}`
+                    : `No test case found for ID: ${normalizedTestCaseId}`
+            );
+
+            return {
+                editing: responseData?.editing ?? false,
+                data: matchedTestCase ? [matchedTestCase] : [],
+            };
+        } catch (error: any) {
+            logger.error(
+                {
+                    error,
+                    testCaseId,
+                    status: error?.response?.status,
+                    requestUrl: error?.config?.url,
+                    requestMethod: error?.config?.method,
+                    requestData: error?.config?.data,
+                    responseData: error?.response?.data,
+                },
+                `Failed to fetch test case details for ID: ${testCaseId}`
+            );
+
+            throw new Error(
+                error?.response?.data?.message ||
+                error?.message ||
+                'Failed to fetch test case details'
+            );
+        }
+    }
+
+    // get_test_plan_by_id
+    async getTestPlanById(testPlanId: string) {
+        await this.ensureAuthenticated();
+
+        try {
+            if (!testPlanId || typeof testPlanId !== 'string' || testPlanId.trim() === '') {
+                throw new Error('Test Plan ID is required and must be a valid UUID');
+            }
+
+            const normalizedTestPlanId = testPlanId.trim();
+            const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+            if (!uuidPattern.test(normalizedTestPlanId)) {
+                throw new Error('Test Plan ID must be a valid UUID');
+            }
+
+            const payload = {
+                page: 1,
+                pageSize: 100,
+                sortBy: 'testPlanNumber',
+                sorts: {},
+                descending: true,
+                searchText: '',
+                projectIds: [],
+                planMakerIds: [],
+                planReviewerIds: [],
+                fromDate: null,
+                toDate: null,
+            };
+
+            const response = await this.httpClient.post(
+                ERP_ENDPOINTS.TEST_PLAN.LIST,
+                payload
+            );
+
+            const responseData = response?.data;
+            const testPlans = Array.isArray(responseData)
+                ? responseData
+                : Array.isArray(responseData?.data)
+                    ? responseData.data
+                    : [];
+
+            const normalizedIdLowerCase = normalizedTestPlanId.toLowerCase();
+            const matchedTestPlan = testPlans.find((testPlan: any) => {
+                const recordId = String(testPlan?.id ?? '')
+                    .trim()
+                    .toLowerCase();
+
+                return recordId === normalizedIdLowerCase;
+            });
+
+            logger.info(
+                matchedTestPlan
+                    ? `Successfully fetched test plan details for ID: ${normalizedTestPlanId}`
+                    : `No test plan found for ID: ${normalizedTestPlanId}`
+            );
+
+            return {
+                editing: responseData?.editing ?? false,
+                data: matchedTestPlan ? [matchedTestPlan] : [],
+            };
+        } catch (error: any) {
+            logger.error(
+                {
+                    error,
+                    testPlanId,
+                    status: error?.response?.status,
+                    requestUrl: error?.config?.url,
+                    requestMethod: error?.config?.method,
+                    requestData: error?.config?.data,
+                    responseData: error?.response?.data,
+                },
+                `Failed to fetch test plan details for ID: ${testPlanId}`
+            );
+
+            throw new Error(
+                error?.response?.data?.message ||
+                error?.message ||
+                'Failed to fetch test plan details'
+            );
+        }
+    }
+
+    // list_test_plans_by_project_id
+    async listTestPlansByProjectId(projectId: string) {
+        await this.ensureAuthenticated();
+
+        try {
+            if (!projectId || typeof projectId !== 'string' || projectId.trim() === '') {
+                throw new Error('Project ID is required and must be a valid UUID');
+            }
+
+            const normalizedProjectId = projectId.trim();
+            const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+            if (!uuidPattern.test(normalizedProjectId)) {
+                throw new Error('Project ID must be a valid UUID');
+            }
+
+            const payload = {
+                page: 1,
+                pageSize: 100,
+                sortBy: 'testPlanNumber',
+                sorts: {},
+                descending: true,
+                searchText: '',
+                projectIds: [normalizedProjectId],
+                planMakerIds: [],
+                planReviewerIds: [],
+                fromDate: null,
+                toDate: null,
+            };
+
+            const response = await this.httpClient.post(
+                ERP_ENDPOINTS.TEST_PLAN.LIST,
+                payload
+            );
+
+            const responseData = response?.data;
+            const testPlans = Array.isArray(responseData)
+                ? responseData
+                : Array.isArray(responseData?.data)
+                    ? responseData.data
+                    : [];
+
+            const normalizedProjectIdLowerCase = normalizedProjectId.toLowerCase();
+            const matchingTestPlans = testPlans.filter((testPlan: any) => {
+                const recordProjectId = String(
+                    testPlan?.projectId || testPlan?.project?.id || ''
+                )
+                    .trim()
+                    .toLowerCase();
+
+                return recordProjectId === normalizedProjectIdLowerCase;
+            });
+
+            logger.info(
+                `Successfully fetched ${matchingTestPlans.length} test plan(s) for projectId: ${normalizedProjectId}`
+            );
+
+            return {
+                editing: responseData?.editing ?? false,
+                data: matchingTestPlans,
+            };
+        } catch (error: any) {
+            logger.error(
+                {
+                    error,
+                    projectId,
+                    status: error?.response?.status,
+                    requestUrl: error?.config?.url,
+                    requestMethod: error?.config?.method,
+                    requestData: error?.config?.data,
+                    responseData: error?.response?.data,
+                },
+                `Failed to fetch test plans for projectId: ${projectId}`
+            );
+
+            throw new Error(
+                error?.response?.data?.message ||
+                error?.message ||
+                'Failed to fetch test plans'
+            );
+        }
+    }
+
+    // list_test_cases_by_test_plan
+    async listTestCasesByTestPlan(testPlanName: string) {
+        await this.ensureAuthenticated();
+
+        try {
+            if (!testPlanName || typeof testPlanName !== 'string' || testPlanName.trim() === '') {
+                throw new Error('Test Plan Name is required and must be a string');
+            }
+
+            const normalizedTestPlanName = testPlanName.trim();
+            const payload = {
+                page: 1,
+                pageSize: 100,
+                sortBy: 'testCaseNumber',
+                sorts: {},
+                descending: true,
+                searchText: normalizedTestPlanName,
+                testCaseNumber: 0,
+                projectIds: [],
+                testPlanIds: [],
+                statusIds: [],
+                testedByIds: [],
+                fromDate: null,
+                toDate: null,
+            };
+
+            const response = await this.httpClient.post(
+                ERP_ENDPOINTS.TEST_CASE.LIST,
+                payload
+            );
+
+            const responseData = response?.data;
+            const testCases = Array.isArray(responseData)
+                ? responseData
+                : Array.isArray(responseData?.data)
+                    ? responseData.data
+                    : [];
+
+            const normalizedNameLowerCase = normalizedTestPlanName.toLowerCase();
+            const matchingTestCases = testCases.filter((testCase: any) => {
+                const recordTestPlanName = String(testCase?.testPlan?.name ?? '')
+                    .trim()
+                    .toLowerCase();
+
+                return recordTestPlanName === normalizedNameLowerCase;
+            });
+
+            logger.info(
+                `Successfully fetched ${matchingTestCases.length} test case(s) for Test Plan Name: ${normalizedTestPlanName}`
+            );
+
+            return {
+                editing: responseData?.editing ?? false,
+                data: matchingTestCases,
+            };
+        } catch (error: any) {
+            logger.error(
+                {
+                    error,
+                    testPlanName,
+                    status: error?.response?.status,
+                    requestUrl: error?.config?.url,
+                    requestMethod: error?.config?.method,
+                    requestData: error?.config?.data,
+                    responseData: error?.response?.data,
+                },
+                `Failed to fetch test cases for Test Plan Name: ${testPlanName}`
+            );
+
+            throw new Error(
+                error?.response?.data?.message ||
+                error?.message ||
+                'Failed to fetch test cases'
+            );
+        }
     }
 }
 export const meldepClient = new MeldepClient();

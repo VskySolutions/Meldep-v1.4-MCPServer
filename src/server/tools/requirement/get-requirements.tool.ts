@@ -44,14 +44,17 @@ const VALID_STATUS_LABELS = Object.keys(REQUIREMENT_STATUS_MAP)
 function resolveStatusIds(statuses) {
     const resolved = [];
     const unrecognized = [];
+
     for (const s of statuses) {
         const key = s.trim().toLowerCase();
+
         if (REQUIREMENT_STATUS_MAP[key]) {
             resolved.push(REQUIREMENT_STATUS_MAP[key]);
         } else {
             unrecognized.push(s);
         }
     }
+
     return { resolved, unrecognized };
 }
 
@@ -67,6 +70,7 @@ async function executeGetRequirementsTool(input) {
     const {
         projectId: inputProjectId,
         requirementId,
+        requirementDescriptionCount,
         statuses,
         moduleIds,
         searchText,
@@ -79,10 +83,25 @@ async function executeGetRequirementsTool(input) {
 
     // ── Step 1: Resolve projectId (input → session → error) ─────────────────
     const projectId = inputProjectId || sessionStore.getProjectId();
+
     if (!projectId) {
         return {
             isError: true,
             message: 'projectId is required but was not provided and is not set in the session. Please select a project or provide a projectId.',
+            data: null,
+        };
+    }
+
+    if (
+        requirementDescriptionCount !== undefined &&
+        (
+            !Number.isInteger(requirementDescriptionCount) ||
+            requirementDescriptionCount < 1
+        )
+    ) {
+        return {
+            isError: true,
+            message: 'requirementDescriptionCount must be a positive integer greater than 0.',
             data: null,
         };
     }
@@ -131,7 +150,11 @@ async function executeGetRequirementsTool(input) {
             }
 
             const rawData = await meldepClient.getRequirementById(uuid);
-            const mapped  = mapRequirementByIdResponse(rawData);
+
+            const mapped = mapRequirementByIdResponse(
+                rawData,
+                requirementDescriptionCount
+            );
 
             return {
                 isError: false,
@@ -140,6 +163,7 @@ async function executeGetRequirementsTool(input) {
             };
         } catch (error) {
             logger.error({ error }, 'Error fetching requirement by ID.');
+
             return {
                 isError: true,
                 message: `Failed to retrieve requirement details: ${error.message}`,
@@ -154,6 +178,7 @@ async function executeGetRequirementsTool(input) {
 
     if (statuses && statuses.length > 0) {
         const resolved = resolveStatusIds(statuses);
+
         statusIds = resolved.resolved;
         unrecognizedStatuses = resolved.unrecognized;
 
@@ -166,19 +191,19 @@ async function executeGetRequirementsTool(input) {
         }
     }
 
-    const resolvedPage     = page     ?? 1;
+    const resolvedPage = page ?? 1;
     const resolvedPageSize = Math.min(pageSize ?? 20, 20);
 
     const payload = {
         page:                resolvedPage,
         pageSize:            resolvedPageSize,
-        sortBy:              sortBy     || 'status.dropDownValue',
+        sortBy:              sortBy || 'status.dropDownValue',
         descending:          descending || false,
         sorts:               {},
-        searchText:          searchText        || '',
+        searchText:          searchText || '',
         requirementNumber:   requirementNumber || '0',
         projectIds:          [projectId],
-        projectModuleIds:    moduleIds         || [],
+        projectModuleIds:    moduleIds || [],
         requirementGroupIds: [],
         name:                '',
         requirementType:     null,
@@ -191,11 +216,16 @@ async function executeGetRequirementsTool(input) {
 
     try {
         const rawData = await meldepClient.getAllRequirementsByProject(payload);
-        logger.info({ statusIds, moduleIds, searchText }, 'Requirements list fetched successfully.');
+
+        logger.info(
+            { statusIds, moduleIds, searchText },
+            'Requirements list fetched successfully.'
+        );
 
         const mapped = mapRequirementListResponse(rawData);
 
         let message = 'Requirements retrieved successfully.';
+
         if (unrecognizedStatuses.length > 0) {
             message = `Requirements retrieved. Note: these statuses were not recognized and were ignored: ${unrecognizedStatuses.join(', ')}.`;
         }
@@ -210,6 +240,7 @@ async function executeGetRequirementsTool(input) {
         };
     } catch (error) {
         logger.error({ error }, 'Error fetching requirements list.');
+
         return {
             isError: true,
             message: `Failed to retrieve requirements: ${error.message}`,
@@ -347,15 +378,14 @@ async function executeGetRequirementsTool(input) {
 //     },
 // };
 
-
-
 export const getRequirementsTool = {
     name: 'get_requirements',
 
     description: `Retrieves requirements for a project from Meldep ERP. This single tool handles fetching full details for a specific requirement or querying a paginated, filterable list of requirements.
 
 ROUTING LOGIC:
-- If requirementId is provided → fetches full detail of that single requirement (including description, notes, dates, and related tasks).
+- If requirementId is provided → fetches full detail of that single requirement, including descriptions, notes, dates, and related tasks.
+- If requirementDescriptionCount is provided with requirementId → returns the requested number of descriptions in newest-to-oldest order.
 - Otherwise → fetches a paginated list of requirements, with optional filters for status, module, search text, and requirement number.
 
 PROJECTID RESOLUTION:
@@ -366,6 +396,7 @@ PROJECTID RESOLUTION:
 Args:
     projectId (str, optional): Project UUID. Falls back to session if omitted.
     requirementId (str, optional): Requirement UUID or number (e.g., "1360"). Triggers single-record detail fetch.
+    requirementDescriptionCount (int, optional): Number of latest requirement descriptions to retrieve. Change-log descriptions are returned newest first, followed by the original requirement description.
     statuses (list[str], optional): Filter list by one or more status labels. Case-insensitive (e.g., ["Open"], ["In Progress", "New"]). Valid labels: cancelled, close, dev deployed, in progress, in testing, new, on hold by client, open, paused by dev team, prod deployed, ready for prod, supp deployed, test deployed, waiting for someone.
     moduleIds (list[str], optional): Filter list by one or more project module UUIDs.
     searchText (str, optional): Free-text search keyword to match within requirement titles or content.
@@ -375,15 +406,16 @@ Args:
     sortBy (str, optional): Field name to sort by. Default is "status.dropDownValue".
     descending (bool, optional): Whether to sort in descending order. Default is false.
 
-Response (Single Record Mode - when requirementId is provided):
+Response (Single Record Mode - when requirementId is provided without requirementDescriptionCount):
 {
     "isError": false,
     "message": "Requirement retrieved successfully.",
     "data": {
         "requirementId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
         "requirementNo": 1182,
-        "requirementTitle": "Project Requirement Generation Using Historical Performance Data",
-        "requirementDescription": "Implement an AI-based solution...",
+        "requirementTitle": "Sample Requirement",
+        "requirementDescription": "Original requirement description.",
+        "requirementChangeLogDescription": "Latest requirement change-log description.",
         "requirementModule": "AI Testing Assistant",
         "requirementProject": "Project Name",
         "requirementEnteredBy": "John Doe",
@@ -395,6 +427,42 @@ Response (Single Record Mode - when requirementId is provided):
         "createdDate": "05/06/2026 06:19 PM",
         "modifiedDate": "06/06/2026 11:44 AM",
         "notes": "",
+        "lastNote": "This is the most recent note added to the requirement.",
+        "tasks": [
+            {
+                "taskId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                "taskNumber": 14100,
+                "taskStatus": "Close"
+            }
+        ]
+    }
+}
+
+Response (Single Record Mode - when requirementDescriptionCount is provided):
+{
+    "isError": false,
+    "message": "Requirement retrieved successfully.",
+    "data": {
+        "requirementId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        "requirementNo": 1182,
+        "requirementTitle": "Sample Requirement",
+        "requirementDescriptions": [
+            "Latest requirement description.",
+            "Previous requirement description.",
+            "Original requirement description."
+        ],
+        "requirementModule": "AI Testing Assistant",
+        "requirementProject": "Project Name",
+        "requirementEnteredBy": "John Doe",
+        "requirementIdentifiedBy": "Jane Doe",
+        "requirementStatus": "Close",
+        "approvalStatus": "Approved",
+        "requirementPriority": "N/A",
+        "identifiedDate": "05/06/2026",
+        "createdDate": "05/06/2026 06:19 PM",
+        "modifiedDate": "06/06/2026 11:44 AM",
+        "notes": "",
+        "lastNote": "This is the most recent note added to the requirement.",
         "tasks": [
             {
                 "taskId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
@@ -438,50 +506,67 @@ Response (List Mode - when requirementId is omitted):
 
     inputSchema: {
         type: 'object',
+
         properties: {
             projectId: {
                 type: 'string',
                 description: 'Project UUID. Optional — falls back to the session projectId if not provided.',
             },
+
             requirementId: {
                 type: 'string',
                 description: 'Requirement number (e.g., "1360") or UUID. When provided, returns full detail of that single requirement.',
             },
+
+            requirementDescriptionCount: {
+                type: 'integer',
+                minimum: 1,
+                description: 'Optional number of latest requirement descriptions to return. Change-log descriptions are returned newest first, followed by the original requirement description.',
+            },
+
             statuses: {
                 type: 'array',
                 items: { type: 'string' },
                 description: 'Filter list results by one or more status labels. Case-insensitive. E.g., ["Open"], ["In Progress", "New"].',
             },
+
             moduleIds: {
                 type: 'array',
                 items: { type: 'string' },
                 description: 'Filter list results by one or more project module UUIDs.',
             },
+
             searchText: {
                 type: 'string',
                 description: 'Free-text search within requirements.',
             },
+
             requirementNumber: {
                 type: 'string',
                 description: 'Filter list by exact requirement number. Use requirementId instead if you want full detail of a specific requirement.',
             },
+
             page: {
                 type: 'number',
                 description: 'Page number for pagination. Default 1.',
             },
+
             pageSize: {
                 type: 'number',
                 description: 'Records per page. Maximum 20. Default 20.',
             },
+
             sortBy: {
                 type: 'string',
                 description: 'Field to sort results by. Default "status.dropDownValue".',
             },
+
             descending: {
                 type: 'boolean',
                 description: 'Sort in descending order. Default false.',
             },
         },
+
         required: [],
     },
 };

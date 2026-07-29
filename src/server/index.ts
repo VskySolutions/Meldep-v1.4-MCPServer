@@ -10,6 +10,10 @@ import { getModuleByProjectIdTool, executeGetModuleByProjectIdToolHandler } from
 import { getProjectIdTool, executeGetProjectIdToolHandler } from './tools/get-project-id/get-project-id.tool.js';
 import { getProjectListTool, executeGetProjectListToolHandler } from './tools/project-list/get-project-list.tool.js';
 import { getModuleByIdTool, executeGetModuleByIdToolHandler } from './tools/project-module/get-module-by-id.tool.js';
+import { getTestCaseByIdTool, executeGetTestCaseByIdToolHandler } from './tools/get_test_case_by_id/get-test-case-by-id.tool.js';
+import { getTestPlanByIdTool, executeGetTestPlanByIdToolHandler } from './tools/get-test-plan-by-id/get-test-plan-by-id.tool.js';
+import { listTestPlansByProjectIdTool, executeListTestPlansByProjectIdToolHandler } from './tools/list-test-plans-by-project-id/list-test-plans-by-project-id.tool.js';
+import { listTestCasesByTestPlanTool, executeListTestCasesByTestPlanToolHandler } from './tools/list-test-cases-by-test-plan/list-test-cases-by-test-plan.tool.js';
 // import { connectMeldepTool, executeConnectMeldepToolHandler } from './tools/auth/connect-meldep.tool.js';
 
 import {getTeamMembersByProjectIdTool, executeGetTeamMembersByProjectIdToolHandler, } from './tools/team-member-by-project-id/get-team-member-by-project-id.tool.js';
@@ -38,7 +42,25 @@ const logger = {
     error: (...args: any[]) => console.error(...args),
 };
 
-const tools = [getMonthlyPlanTool, getWeeklyPlanTool, getRequirementsTool, getTaskByTaskNumberTool, getModuleByProjectIdTool, getTimesheetDataByDateRangeTool, getTeamMembersByProjectIdTool, getEmployeeWorkloadReportTool, getProjectIdTool, getProjectListTool, getModuleByIdTool,writeWeeklyActualTool, /* connectMeldepTool */writeRequirementNotesTool];
+const tools = [
+    getMonthlyPlanTool,
+    getWeeklyPlanTool,
+    getRequirementsTool,
+    getTaskByTaskNumberTool,
+    getModuleByProjectIdTool,
+    getTimesheetDataByDateRangeTool,
+    getTeamMembersByProjectIdTool,
+    getEmployeeWorkloadReportTool,
+    getProjectIdTool,
+    getProjectListTool,
+    getModuleByIdTool,
+    getTestCaseByIdTool,
+    getTestPlanByIdTool,
+    listTestPlansByProjectIdTool,
+    listTestCasesByTestPlanTool,
+    writeWeeklyActualTool,
+    writeRequirementNotesTool,
+];
 const toolHandlers: ToolHandlers = {
     get_monthly_plan: executeGetMonthlyPlanToolHandler,
     get_weekly_plan: executeGetWeeklyPlanToolHandler,
@@ -51,6 +73,10 @@ const toolHandlers: ToolHandlers = {
     [getEmployeeWorkloadReportTool.name]: executeGetEmployeeWorkloadReportToolHandler,
     [getProjectListTool.name]: executeGetProjectListToolHandler,
     [getModuleByIdTool.name]: executeGetModuleByIdToolHandler,
+    [getTestCaseByIdTool.name]: executeGetTestCaseByIdToolHandler,
+    [getTestPlanByIdTool.name]: executeGetTestPlanByIdToolHandler,
+    [listTestPlansByProjectIdTool.name]: executeListTestPlansByProjectIdToolHandler,
+    [listTestCasesByTestPlanTool.name]: executeListTestCasesByTestPlanToolHandler,
     [writeWeeklyActualTool.name]: executeWriteWeeklyActualToolHandler,
     [writeRequirementNotesTool.name]: executeWriteRequirementNotesToolHandler,
     // [connectMeldepTool.name]: executeConnectMeldepToolHandler,
